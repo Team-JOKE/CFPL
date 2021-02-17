@@ -48,7 +48,7 @@ class Lexer(object):
         RESERVED_WORDS={
             'VAR': Token(VAR,'VAR'),
             'AS': Token(AS,'AS'),
-            'INT': Token(AS,'INT_DT'),
+            'INT': Token(INT_DT,'INT_DT'),
             'CHAR': Token(CHAR_DT, 'CHAR'),
             'BOOL':Token(BOOL_DT,'BOOL'),
             'FLOAT': Token(FLOAT_DT,'FLOAT')
@@ -98,7 +98,7 @@ class Lexer(object):
             boolean+=self.current_char
             self.advance()
         if self.current_char == '\"':
-            boolean+='\''
+            boolean+='\"'
             self.advance()
         return Token(BOOL_DT,boolean)
 
@@ -120,6 +120,9 @@ class Lexer(object):
                 return Token(COMMA,',')
             elif self.current_char == '\"':
                 return self.get_full_boolean()
+            elif self.current_char == '=':
+                self.advance()
+                return Token(EQUAL,'=')
             else:
                 self.raiseError()
 
@@ -177,9 +180,15 @@ class Parser(object):
 
         # construct and return a type node
 
+def main():
+    text=input("cfpl>")
+    lexer=Lexer(text)
+    while lexer.current_char is not None:
+        print(lexer.get_next_token())
         
         
-
+if __name__ == '__main__':
+    main()
     
     
 
