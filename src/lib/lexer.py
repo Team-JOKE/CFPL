@@ -1,6 +1,5 @@
 from .token import Token, TokenType
 
-
 class Lexer(object):
     # handles the tokenization of the input string
     # syntax checking
