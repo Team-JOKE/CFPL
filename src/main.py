@@ -1,8 +1,3 @@
-<<<<<<< Updated upstream
-"""Main Program"""
-
-print("hello world!")
-=======
 #Assumes input strings are free of errors
 #no operations yet,assign only
 
@@ -263,4 +258,3 @@ if __name__ == '__main__':
     
     
 
->>>>>>> Stashed changes
