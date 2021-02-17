@@ -27,7 +27,7 @@ class Lexer(object):
         else:
             return self.text[peek_pos]
 
-    def get_full_identifier(self):
+    def get_full_identifier(self) -> Token:
         RESERVED_WORDS = {
             "VAR": Token(TokenType.VAR, "VAR"),
             "AS": Token(TokenType.AS, "AS"),
@@ -46,7 +46,7 @@ class Lexer(object):
         token = RESERVED_WORDS.get(id, Token(TokenType.IDENT, id))
         return token
 
-    def get_full_number(self):
+    def get_full_number(self) -> Token:
         # multi-digit integer or float
         # no syntax error detection yet
         number = ""
@@ -62,7 +62,7 @@ class Lexer(object):
             return Token(TokenType.FLOAT, number)
         return Token(TokenType.INTEGER, number)
 
-    def get_full_char(self):
+    def get_full_char(self) -> Token:
         # character
         # no error detection yet
         char = "'"
@@ -75,7 +75,7 @@ class Lexer(object):
             self.advance()
         return Token(TokenType.CHAR_DT, char)
 
-    def get_full_boolean(self):
+    def get_full_boolean(self) -> Token:
         # to be changed, applicable only to variable declaration with no error detection
         boolean = '"'
         self.advance()
@@ -91,7 +91,7 @@ class Lexer(object):
         while self.current_char is not None and self.current_char.isspace():
             self.advance()
 
-    def get_next_token(self):
+    def get_next_token(self) -> Token:
         while self.current_char is not None:
             if self.current_char.isspace():
                 self.skip_whitespace()
