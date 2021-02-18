@@ -250,7 +250,11 @@ class Interpreter(object):
         
 
 def main():
-    text=input("cfpl>")
+    text=""
+    with open('D:\\3rd Year 2nd Sem\\Programming Languages\\CFPL\\CFPL\\CFPL\\src\\test.txt', 'r') as file:
+        for line in file.readlines():
+            text+=line
+
     lexer=Lexer(text)
     parser=Parser(lexer)
     interpreter=Interpreter(parser)

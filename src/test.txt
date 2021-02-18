@@ -1,0 +1,2 @@
+VAR foo="FALSE" AS BOOL
+VAR bar=143 AS INT
