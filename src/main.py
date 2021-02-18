@@ -21,7 +21,6 @@ class Token(object):
 class Lexer(object):
     #handles the tokenization of the input string
     #syntax checking
-
     def __init__(self,text):
         self.text=text
         self.pos=0
@@ -235,6 +234,7 @@ class Interpreter(object):
             self.visit_variable(declaration)
     
     def visit_variable(self,variable):
+        # add to symbol table
         name=variable.token.value
         var_type=variable.type_node.name
         value=None
