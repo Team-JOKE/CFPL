@@ -135,9 +135,10 @@ class VariableDeclarationBlock(AST):
         self.declarations=declarations
 
 class Variable(AST):
-    def __init__(self,token,type_node):
+    def __init__(self,token,type_node,value_node):
         self.token=token
         self.type_node=type_node
+        self.value_node=value_node
 
 class DataType(AST):
     def __init__(self,token):
@@ -197,16 +198,14 @@ class Parser(object):
         #variable_expression-> var_name | var_name = value
         id_token=self.current_token
         self.eat(ID)
-        
-        #cannot assign on declaration yet
-
-        # if self.current_token.type == EQUAL:
-        #     self.eat(EQUAL)
-        #     self.current_token=self.lexer.get_next_token()
-        #     value = self.current_token
-        #     return Assign(id_token,value)
-
-        return Variable(id_token,None)
+        var=Variable(id_token,None,None)
+        if self.current_token.type == EQUAL:
+            self.eat(EQUAL)
+            #hack for storing only to be changed
+            value = self.current_token
+            self.current_token=self.lexer.get_next_token()
+            var.value_node = Constant(value)
+        return var
 
     def data_type(self):
         token = self.current_token
@@ -238,7 +237,12 @@ class Interpreter(object):
     def visit_variable(self,variable):
         name=variable.token.value
         var_type=variable.type_node.name
-        self.VARIABLES[name]=var_type
+        value=None
+        if (variable.value_node is not None):
+             value=variable.value_node.value
+        else:
+            value = "None"
+        self.VARIABLES[name]="TYPE: "+var_type+" Value: "+value
     
     def interpret(self):
         variable_declaration=self.parser.parse()
