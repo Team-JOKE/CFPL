@@ -1,5 +1,5 @@
-from .ast import Constant, Variable, VariableDeclarationBlock
-from .token import TokenType
+from lib.ast import Constant, Variable, VariableDeclarationBlock
+from lib.token import TokenType
 
 
 class Parser(object):
