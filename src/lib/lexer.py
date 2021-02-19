@@ -1,5 +1,6 @@
 from .token import Token, TokenType
 
+
 class Lexer(object):
     # handles the tokenization of the input string
     # syntax checking
@@ -30,18 +31,18 @@ class Lexer(object):
         RESERVED_WORDS = {
             "VAR": Token(TokenType.VAR, "VAR"),
             "AS": Token(TokenType.AS, "AS"),
-            "INT": Token(TokenType.INT_DT, "INT_DT"),
-            "CHAR": Token(TokenType.CHAR_DT, "CHAR"),
-            "BOOL": Token(TokenType.BOOL_DT, "BOOL"),
-            "FLOAT": Token(TokenType.FLOAT_DT, "FLOAT"),
+            "INT": Token(TokenType.KW_INT, "KW_INT"),
+            "CHAR": Token(TokenType.KW_CHAR, "KW_CHAR"),
+            "BOOL": Token(TokenType.KW_BOOL, "KW_BOOL"),
+            "FLOAT": Token(TokenType.KW_FLOAT, "KW_FLOAT"),
         }
 
         id = ""
         while self.current_char is not None and self.current_char.isalnum():
             id += self.current_char
             self.advance()
-        # returns a token for a reserved word or a new token of type id if it
-        # is not a reserved word
+
+        # returns a token for a reserved word or a new token of type id if it is not a reserved word
         token = RESERVED_WORDS.get(id, Token(TokenType.IDENT, id))
         return token
 
@@ -49,42 +50,54 @@ class Lexer(object):
         # multi-digit integer or float
         # no syntax error detection yet
         number = ""
+
         while self.current_char is not None and self.current_char.isdigit():
             number += self.current_char
             self.advance()
+
         if self.current_char == ".":
             number += self.current_char
             self.advance()
+
             while self.current_char is not None and self.current_char.isdigit():
                 number += self.current_char
                 self.advance()
             return Token(TokenType.FLOAT, number)
-        return Token(TokenType.INTEGER, number)
+
+        return Token(TokenType.INT, number)
 
     def get_full_char(self) -> Token:
         # character
         # no error detection yet
         char = "'"
         self.advance()
+
         while self.current_char is not None and self.current_char != "'":
             char += self.current_char
             self.advance()
+
         if self.current_char == "'":
             char += "'"
             self.advance()
-        return Token(TokenType.CHAR_DT, char)
+
+        return Token(TokenType.CHAR, char)
 
     def get_full_boolean(self) -> Token:
         # to be changed, applicable only to variable declaration with no error detection
-        boolean = '"'
+        # advance for starting quotation mark
         self.advance()
+
+        boolean = ""
         while self.current_char is not None and self.current_char != '"':
             boolean += self.current_char
             self.advance()
-        if self.current_char == '"':
-            boolean += '"'
-            self.advance()
-        return Token(TokenType.BOOL_DT, boolean)
+
+        # advance for ending quotation mark
+        self.advance()
+
+        return Token(
+            TokenType.BOOL, boolean
+        )  # please ko check ani ervin y dili ni bool
 
     def skip_whitespace(self):
         while self.current_char is not None and self.current_char.isspace():
