@@ -35,12 +35,16 @@ class Lexer(object):
             "CHAR": Token(TokenType.KW_CHAR, "KW_CHAR"),
             "BOOL": Token(TokenType.KW_BOOL, "KW_BOOL"),
             "FLOAT": Token(TokenType.KW_FLOAT, "KW_FLOAT"),
+            "START": Token(TokenType.START, "START"),
+            "STOP": Token(TokenType.STOP, "STOP"),
+            "INPUT": Token(TokenType.INPUT, "INPUT"),
         }
 
         id = ""
         while self.current_char is not None and self.current_char.isalnum():
             id += self.current_char
             self.advance()
+
 
         # returns a token for a reserved word or a new token of type id if it is not a reserved word
         token = RESERVED_WORDS.get(id, Token(TokenType.IDENT, id))
@@ -120,5 +124,8 @@ class Lexer(object):
             elif self.current_char == "=":
                 self.advance()
                 return Token(TokenType.EQUAL, "=")
+            elif self.current_char == ":":
+                self.advance()
+                return Token(TokenType.COLON, ":")
             else:
                 self.raiseError()

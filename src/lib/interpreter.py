@@ -1,4 +1,4 @@
-from lib.ast import Variable, VariableDeclarationBlock
+from lib.ast import Variable, VariableDeclarationBlock, ExecutableBlock
 from lib.token import TokenType
 
 
@@ -32,6 +32,45 @@ class Interpreter(object):
 
         self.VARIABLES[name] = (var_type.name, value)
 
+    def input_values(self, variable: Variable):
+        #input variables from user executable
+        name = variable.value
+        var_type = variable.type
+
+        var = self.VARIABLES[name]
+#        print(var[0] )
+#        print(TokenType.INT )
+
+        if(var[0] == "INT"):
+            value = int(input())
+        elif(var[0] == "FLOAT"):
+            value = float(input())
+        elif(var[0] == "CHAR"):
+            value = input()
+        elif(var[0] == "BOOL"):
+            value = bool(input())
+        else:
+            raise Exception("Invalid input. Received {variable.type} instead of {value}")
+
+        self.VARIABLES[name] = (var_type.name, value)
+    def visit_executable_block(self,exec_node: ExecutableBlock):
+        mult = False
+        must_input = False
+
+        for executable in exec_node.executables:
+            if(executable.type == TokenType.INPUT):
+                must_input = True
+            elif(must_input):
+                self.input_values(executable)
+                must_input = False
+            elif(mult):
+                self.input_values(executable) # this does not work yet, it's for inputting with multiple variables
+            elif(executable.type == TokenType.STOP):
+                print("done")
+
     def interpret(self):
         variable_declaration = self.parser.parse()
         self.visit_variable_declaration_block(variable_declaration)
+        var = self.VARIABLES
+        execu = self.parser.parse_executable(var)
+        self.visit_executable_block(execu)

@@ -9,6 +9,9 @@ class VariableDeclarationBlock(AST):
     def __init__(self, declarations):
         self.declarations = declarations
 
+class ExecutableBlock(AST):
+    def __init__(self, executables):
+        self.executables = executables
 
 class DataType(AST):
     def __init__(self, token: Token):

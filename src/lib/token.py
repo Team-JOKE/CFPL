@@ -27,6 +27,8 @@ class TokenType(Enum):
 
     # etc
     IDENT = 17
+    COLON = 18
+    MUL_INPUT = 19
 
 
 class Token(object):
