@@ -1,13 +1,19 @@
+from lib.interpreter import Interpreter
 from lib.lexer import Lexer
+from lib.parser import Parser
 
 
 def main():
-    # hax for presentation
-    with open("./sample-source-codes/1.cfpl", "r") as file:
+    text = ""
+    with open("./src/sample-source-codes/1.cfpl", "r") as file:
         for line in file.readlines():
-            lexer = Lexer(line)
-            while lexer.current_char is not None:
-                print(lexer.get_next_token())
+            text += line
+
+    lexer = Lexer(text)
+    parser = Parser(lexer)
+    interpreter = Interpreter(parser)
+    interpreter.interpret()
+    print(interpreter.VARIABLES)
 
 
 if __name__ == "__main__":

@@ -1,57 +1,91 @@
+from lib.ast import Constant, Variable, VariableDeclarationBlock
 from lib.token import TokenType
 
 
 class Parser(object):
     def __init__(self, lexer):
         self.lexer = lexer
-        self.current_token = lexer.get_next_token()
+        self.current_token = self.lexer.get_next_token()
 
-    def raise_error(self):
-        raise Exception("Error in Parsing")
+    def raise_error(self, suppposed_type, received_type):
+        raise Exception(
+            f"Error in Parsing received {received_type} instead of {suppposed_type}"
+        )
 
     def eat(self, token_type):
         if self.current_token.type == token_type:
             self.current_token = self.lexer.get_next_token()
         else:
-            self.raise_error()
+            self.raise_error(token_type, self.current_token.type)
 
     def variable_declaration(self):
         # testing if format follows the grammar
         # VD-> 'VAR' variable_list AS data_type VD | e
-        while self.current_token.type != TokenType.START:
+        nodes = []
+
+        while (
+            self.current_token is not None
+            and self.current_token.type != TokenType.START  # noqa
+        ):
             self.eat(TokenType.VAR)
-            self.variable_list()
+            var_list = self.variable_list()
             self.eat(TokenType.AS)
-            self.data_type()
-            # attach all variable lists to this node
+            data_type = self.data_type()
+
+            # attach type node to all variables in variable_list
+            for var in var_list:
+                var.type_node = data_type
+                nodes.append(var)
+
+        return VariableDeclarationBlock(nodes)
 
     def variable_list(self):
         # variable_list -> variable_expression | variable_expression, variable_list
-        self.variable_expression()
+        node = self.variable_expression()
+        nodes = [node]
+
         while self.current_token.type == TokenType.COMMA:
-            self.variable_expression()
-            # attach all variable expressions to this node
+            self.eat(TokenType.COMMA)
+            nodes.append(self.variable_expression())
+
+        return nodes
 
     def variable_expression(self):
-        self.current_token = self.lexer.get_next_token()
+        # variable_expression-> var_name | var_name = value
+        id_token = self.current_token
         self.eat(TokenType.IDENT)
+        var = Variable(id_token, None, None)
+
         if self.current_token.type == TokenType.EQUAL:
             self.eat(TokenType.EQUAL)
+
+            # hack for storing only to be changed
+            value = self.current_token
             self.current_token = self.lexer.get_next_token()
-            # value = self.current_token # unused variable
-            # construct and return assign node in parse tree/AST
+            var.value_node = Constant(value)
 
-        # construct and return variable node
+        return var
 
-    def data_type(self):
+    def data_type(self) -> TokenType:
         token = self.current_token
-        if token.type == TokenType.INT_DT:
-            self.eat(TokenType.INT_DT)
-        elif token.type == TokenType.CHAR_DT:
-            self.eat(TokenType.CHAR_DT)
-        elif token.type == TokenType.FLOAT_DT:
-            self.eat(TokenType.FLOAT_DT)
-        elif token.type == TokenType.BOOL_DT:
-            self.eat(TokenType.BOOL_DT)
 
-        # construct and return a type node
+        if token.type == TokenType.KW_INT:
+            self.eat(TokenType.KW_INT)
+            return TokenType.INT
+
+        if token.type == TokenType.KW_CHAR:
+            self.eat(TokenType.KW_CHAR)
+            return TokenType.CHAR
+
+        if token.type == TokenType.KW_FLOAT:
+            self.eat(TokenType.KW_FLOAT)
+            return TokenType.FLOAT
+
+        if token.type == TokenType.KW_BOOL:
+            self.eat(TokenType.KW_BOOL)
+            return TokenType.BOOL
+
+    def parse(self):
+        # can only handle variable declaration parsing
+        node = self.variable_declaration()
+        return node

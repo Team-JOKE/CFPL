@@ -1,2 +1,1 @@
-VAR foo AS INT
-VAR bar AS CHAR
+VAR a=1,b, c= 3 AS INT
