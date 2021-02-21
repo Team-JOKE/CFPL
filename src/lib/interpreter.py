@@ -47,7 +47,7 @@ class Interpreter(object):
         elif(var[0] == "BOOL"):
             value = bool(input())
         else:
-            raise Exception("Invalid input. Received {variable.type} instead of {value}")
+            raise Exception(f"Invalid input. Received {variable.type} instead of {value}")
 
     def input_mult_values(self, variable: Variable,input_var):
         #input variables from user executable
@@ -64,7 +64,7 @@ class Interpreter(object):
         elif(var[0] == "BOOL"):
             value = bool(input_var)
         else:
-            raise Exception("Invalid input. Received {variable.type} instead of {value}")
+            raise Exception(f"Invalid input. Received {variable.type} instead of {value}")
 
         self.VARIABLES[name] = (var[0], value)
     def visit_executable_block(self,exec_node: ExecutableBlock):
