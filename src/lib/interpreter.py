@@ -36,10 +36,7 @@ class Interpreter(object):
         #input variables from user executable
         name = variable.value
         var_type = variable.type
-
         var = self.VARIABLES[name]
-#        print(var[0] )
-#        print(TokenType.INT )
 
         if(var[0] == "INT"):
             value = int(input())
@@ -52,19 +49,50 @@ class Interpreter(object):
         else:
             raise Exception("Invalid input. Received {variable.type} instead of {value}")
 
-        self.VARIABLES[name] = (var_type.name, value)
-    def visit_executable_block(self,exec_node: ExecutableBlock):
-        mult = False
-        must_input = False
+    def input_mult_values(self, variable: Variable,input_var):
+        #input variables from user executable
+        name = variable.value
+        var_type = variable.type
+        var = self.VARIABLES[name]
 
+        if(var[0] == "INT"):
+            value = int(input_var)
+        elif(var[0] == "FLOAT"):
+            value = float(input_var)
+        elif(var[0] == "CHAR"):
+            value = input_var[0]
+        elif(var[0] == "BOOL"):
+            value = bool(input_var)
+        else:
+            raise Exception("Invalid input. Received {variable.type} instead of {value}")
+
+        self.VARIABLES[name] = (var[0], value)
+    def visit_executable_block(self,exec_node: ExecutableBlock):
+        mult_input = False
+        must_input = False
+        values = None
+        count = 0
+        mult_count=0
         for executable in exec_node.executables:
             if(executable.type == TokenType.INPUT):
                 must_input = True
+            elif(executable.type == TokenType.MUL_INPUT):
+                mult_input = True
+                values = input()
+                values = values.split(",")
+                count = len(values)
+
             elif(must_input):
                 self.input_values(executable)
                 must_input = False
-            elif(mult):
-                self.input_values(executable) # this does not work yet, it's for inputting with multiple variables
+            elif(mult_input):
+                if(mult_count < count):
+                    self.input_mult_values(executable,values[mult_count])
+                    mult_count+=1
+                else:
+                    mult_input = False
+                    mult_count=0
+
             elif(executable.type == TokenType.STOP):
                 print("done")
 

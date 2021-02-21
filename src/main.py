@@ -13,7 +13,7 @@ def main():
     parser = Parser(lexer)
     interpreter = Interpreter(parser)
     interpreter.interpret()
-    #print(interpreter.VARIABLES)
+    print(interpreter.VARIABLES)
 
 
 if __name__ == "__main__":
