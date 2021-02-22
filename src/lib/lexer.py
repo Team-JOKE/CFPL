@@ -38,6 +38,7 @@ class Lexer(object):
             "START": Token(TokenType.START, "START"),
             "STOP": Token(TokenType.STOP, "STOP"),
             "INPUT": Token(TokenType.INPUT, "INPUT"),
+            "OUTPUT": Token(TokenType.OUTPUT, "OUTPUT"),
         }
 
         id = ""
