@@ -1,5 +1,4 @@
 VAR a=1,b, c = 3 AS INT
-VAR f AS CHAR
 START
-INPUT: c,f
+INPUT: c,c
 STOP

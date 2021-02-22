@@ -1,4 +1,4 @@
-from lib.ast import Constant, Variable, VariableDeclarationBlock,ExecutableBlock
+from lib.ast import Constant, Variable, VariableDeclarationBlock, ExecutableBlock
 from lib.token import Token, TokenType
 
 class Parser(object):
@@ -47,15 +47,8 @@ class Parser(object):
         nodes = []
 
         #Checking if START was declared
-        if (self.current_token is not None 
-            and self.current_token.type == TokenType.START
-        ):
-            nodes.append(self.current_token)
-            self.eat(TokenType.START)
-        else:
-            raise Exception(
-                f"Error in Parsing, did NOT received [START]"
-            )
+        nodes.append(self.current_token)
+        self.eat(TokenType.START)
 
         while(
             self.current_token is not None
@@ -99,15 +92,9 @@ class Parser(object):
                 checker = True
 
         #Checking if STOP was declared
-        if (self.current_token is not None 
-            and self.current_token.type == TokenType.STOP
-        ):
-            nodes.append(self.current_token)
-            self.eat(TokenType.STOP)
-        else:
-            raise Exception(
-                f"Error in Parsing, did NOT received [STOP]"
-            )
+        nodes.append(self.current_token)
+        self.eat(TokenType.STOP)
+
         return ExecutableBlock(nodes)
 
 
