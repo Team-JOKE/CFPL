@@ -40,79 +40,6 @@ class Parser(object):
 
         return VariableDeclarationBlock(nodes)
 
-    def create_execution_block(self, variables):
-        #Parsing the executable code into tokens
-
-
-        checker = False
-        Must_Input = False
-        nodes = []
-
-        #Checking if START was declared
-        if (self.current_token is not None 
-            and self.current_token.type == TokenType.START
-        ):
-            nodes.append(self.current_token)
-            self.eat(TokenType.START)
-        else:
-            raise Exception(
-                f"Error in Parsing, did NOT received [START]"
-            )
-
-        while(
-            self.current_token is not None
-            and self.current_token.type != TokenType.STOP
-        ):
-            #If INPUT Function is called
-            if(Must_Input):
-                id_token = self.current_token
-                self.eat(TokenType.IDENT)
-
-                if (id_token.value in variables ==False):
-                    raise Exception("Invalid syntax")
-                
-                if(self.current_token.type == TokenType.COMMA):
-                    nodes.append(Token(TokenType.MUL_INPUT, None))
-                else:
-                    nodes.append(Token(TokenType.INPUT, None))
-
-                nodes.append(id_token)
-
-                while self.current_token.type == TokenType.COMMA:
-                    self.eat(TokenType.COMMA)
-                    id_token = self.current_token
-                    nodes.append(id_token)
-
-                    self.eat(TokenType.IDENT)
-
-                    if (id_token.value in variables == False):
-                        raise Exception("Invalid syntax")
-
-            if(self.current_token.type == TokenType.COLON):
-                if(checker == True):
-                    self.eat(TokenType.COLON)
-                    checker = False
-                    Must_Input = True
-                else:
-                    raise Exception("Invalid syntax")
-
-            elif(self.current_token.type == TokenType.INPUT):
-                self.eat(TokenType.INPUT)
-                checker = True
-
-        #Checking if STOP was declared
-        if (self.current_token is not None 
-            and self.current_token.type == TokenType.STOP
-        ):
-            nodes.append(self.current_token)
-            self.eat(TokenType.STOP)
-        else:
-            raise Exception(
-                "Error in Parsing, did NOT received [STOP]"
-            )
-        return ExecutableBlock(nodes)
-
-
     def variable_list(self):
         # variable_list -> variable_expression | variable_expression, variable_list
         node = self.variable_expression()
@@ -161,14 +88,10 @@ class Parser(object):
 
         node =  DataType(token)
         return node
-
+    # not used, parse_execute() is used
     def parse(self):
         # can only handle variable declaration parsing
         node = self.variable_declaration()
-        return node
-    def parse_executable(self, variables):
-        # can only handle variable executable parsing
-        node = self.create_execution_block(variables)
         return node
 
 # ###### UNKNOWN ######## #
