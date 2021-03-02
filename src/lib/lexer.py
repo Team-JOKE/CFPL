@@ -35,6 +35,8 @@ class Lexer(object):
             "CHAR": Token(TokenType.KW_CHAR, "KW_CHAR"),
             "BOOL": Token(TokenType.KW_BOOL, "KW_BOOL"),
             "FLOAT": Token(TokenType.KW_FLOAT, "KW_FLOAT"),
+            "START": Token(TokenType.START,"START"),
+            "STOP": Token (TokenType.STOP,"STOP")
         }
 
         id = ""
@@ -119,5 +121,23 @@ class Lexer(object):
             elif self.current_char == "=":
                 self.advance()
                 return Token(TokenType.EQUAL, "=")
+            elif self.current_char == "+":
+                self.advance()
+                return Token(TokenType.PLUS, "+")
+            elif self.current_char == "-":
+                self.advance()
+                return Token(TokenType.MINUS,"-")
+            elif self.current_char == "*":
+                self.advance()
+                return Token(TokenType.MUL,"*")
+            elif self.current_char == "/":
+                self.advance()
+                return Token(TokenType.DIV,"/")
+            elif self.current_char == "(":
+                self.advance()
+                return Token(TokenType.LPAREN,"(")
+            elif self.current_char == ")":
+                self.advance()
+                return Token(TokenType.RPAREN,")")
             else:
                 self.raiseError()

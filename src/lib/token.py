@@ -25,9 +25,17 @@ class TokenType(Enum):
     EQUAL = 15
     COMMA = 16
 
-    # etc
-    IDENT = 17
+    #operators
+    PLUS = 17
+    MINUS = 18
+    MUL = 19
+    DIV = 20
 
+    # etc
+    IDENT = 21
+    LPAREN=22
+    RPAREN=23
+    
 
 class Token(object):
     # contains type and value of a Token

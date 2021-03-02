@@ -1,11 +1,6 @@
-<<<<<<< Updated upstream
-from lib.ast import Variable, VariableDeclarationBlock
-=======
 from lib.ast import *
->>>>>>> Stashed changes
 from lib.token import TokenType
 from lib.nodeVisitor import NodeVisitor
-
 
 class Interpreter(NodeVisitor):
     def __init__(self, parser):
@@ -23,7 +18,17 @@ class Interpreter(NodeVisitor):
         value = None
 
         if variable.value_node is not None:
-            value = variable.value_node.value
+            if var_type.name == "INT":
+                value = int(variable.value_node.value)
+            elif var_type.name == "FLOAT":
+                value = float(variable.value_node.value)
+            elif var_type.name == "CHAR":
+                value = variable.value_node.value[1:len(variable.value_node.value)-1]
+            else:
+                if variable.value_node.value == "TRUE":
+                    value=True
+                else:
+                    value=False
         else:
             # default values for each data type
             DEFAULT_VALUES = {
@@ -34,14 +39,9 @@ class Interpreter(NodeVisitor):
             }
 
             value = DEFAULT_VALUES.get(var_type)
+        
+        self.VARIABLES[name] = [var_type.name, value]
 
-        self.VARIABLES[name] = (var_type.name, value)
-
-<<<<<<< Updated upstream
-    def interpret(self):
-        variable_declaration = self.parser.parse()
-        self.visit_variable_declaration_block(variable_declaration)
-=======
     def input_values(self, variable: VariableExpression):
         #input variables from user executable
         name = variable.token.value
@@ -58,7 +58,7 @@ class Interpreter(NodeVisitor):
         else:
             raise Exception(f"Invalid input. Received {variable.type} instead of {value}")
 
-        self.VARIABLES[name] = (var[0], value)
+        self.VARIABLES[name] = [var[0], value]
 
 
     def visit_Compound(self,exec_node: Compound):
@@ -66,6 +66,46 @@ class Interpreter(NodeVisitor):
         for node in nodes:
             self.visit(node)
     
+    def visit_Var(self,var_node:Var):
+        return self.VARIABLES[var_node.value][1]
+
+    def visit_Constant(self,constant_node:Constant):
+        print("constant value" + constant_node.value)
+        if constant_node.type == TokenType.INT:
+            return int(constant_node.value)
+        elif constant_node.type == TokenType.FLOAT:
+            return float (constant_node.value)
+        elif constant_node.type == TokenType.CHAR:
+            if len(constant_node.value)==2:
+                return ''
+            else:
+                return constant_node.value[1]
+        else:
+            if constant_node.value == "TRUE":
+                return True
+            else:
+                return False
+
+    def visit_BinOp(self, bin_op_node:BinOp):
+        # print("visited bin_op" +bin_op_node.left.value+bin_op_node.op.va)
+        if bin_op_node.op.type == TokenType.PLUS:
+            return self.visit(bin_op_node.left) + self.visit(bin_op_node.right)
+        elif bin_op_node.op.type == TokenType.MINUS:
+            return self.visit(bin_op_node.left) - self.visit(bin_op_node.right)
+        elif bin_op_node.op.type == TokenType.MUL:
+            return self.visit(bin_op_node.left) * self.visit(bin_op_node.right)
+        # change later depending on datatypes
+        elif bin_op_node.op.type == TokenType.DIV:
+            return self.visit(bin_op_node.left) / self.visit(bin_op_node.right)
+        # elif bin_op_node.op == FLOAT_DIV:
+        #     return float(self.visit(node.left)) / float(self.visit(node.right))
+
+    def visit_Assign(self, assign_node:Assign):
+        print("Assign Begin")
+        print(assign_node.left.token)
+        print("Assign End")
+        self.VARIABLES[assign_node.left.value][1] = self.visit(assign_node.right)
+
     def visit_Input(self,input_node: Input):
         variables = input_node.token.value
         for var in variables:
@@ -78,7 +118,10 @@ class Interpreter(NodeVisitor):
         self.visit(block_node.declarations)
         self.visit(block_node.compound_statement)
 
+    def visit_AssignCollection(self,assign_collection_node:AssignCollection):
+        for node in reversed(assign_collection_node.assign_nodes):
+            self.visit(node)
+
     def interpret(self):
         program = self.parser.parse_execute()
         self.visit(program)
->>>>>>> Stashed changes

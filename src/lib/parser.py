@@ -1,13 +1,6 @@
-<<<<<<< Updated upstream
-from lib.ast import Constant, Variable, VariableDeclarationBlock
-from lib.token import TokenType
-
-
-=======
 from lib.ast import *
 from lib.token import Token, TokenType
 from lib.lexer import Lexer
->>>>>>> Stashed changes
 class Parser(object):
     def __init__(self, lexer:Lexer):
         self.lexer = lexer
@@ -15,7 +8,7 @@ class Parser(object):
 
     def raise_error(self, suppposed_type, received_type):
         raise Exception(
-            f"Error in Parsing received {received_type} instead of {suppposed_type}"
+            f"Error in Parsing received {received_type} instead of {suppposed_type} current token is {self.current_token}"
         )
 
     def eat(self, token_type):
@@ -67,7 +60,6 @@ class Parser(object):
         if self.current_token.type == TokenType.EQUAL:
             self.eat(TokenType.EQUAL)
             var.value_node = self.constant()
-            self.current_token = self.lexer.get_next_token()
 
         return var
 
@@ -109,6 +101,9 @@ class Parser(object):
         else:
             if constant_token != "\"TRUE\"" and constant_token != "\"FALSE\"":
                 self.raise_error(TokenType.BOOL, "Invalid Token")
+        
+        self.current_token = self.lexer.get_next_token()
+        
         return Constant(constant_token)
     
 
@@ -135,10 +130,6 @@ class Parser(object):
         # can only handle variable declaration parsing
         node = self.variable_declaration()
         return node
-<<<<<<< Updated upstream
-=======
-
-# ###### UNKNOWN ######## #
 
     def block(self):
         """block : declarations compound_statement"""
@@ -168,7 +159,7 @@ class Parser(object):
         results = [node]
         while self.current_token.type != TokenType.STOP:
             
-            if self.current_token.type == None:
+            if self.current_token == None:
                 break
             statement = self.statement()
             results.append(statement)
@@ -177,14 +168,15 @@ class Parser(object):
         return results
 
     def statement(self):
-        """statement : compound_statement
-                     | assignment_statement
+        """statement : input_statement
+                     | output_statement
+                     | assignment_statement_list
                      | empty"""
 
         if self.current_token.type == TokenType.START:
             node = self.compound_statement()
         elif self.current_token.type == TokenType.IDENT:
-            node = self.assignment_statement()
+            node = self.assignment_statement_list()
         elif self.current_token.type == TokenType.OUTPUT:
             self.eat(TokenType.OUTPUT)
             self.eat(TokenType.COLON)
@@ -235,15 +227,29 @@ class Parser(object):
         self.eat(TokenType.IDENT)
         return node
 
-    def assignment_statement(self):
-        """assignment_statement : variable EQUAL expression """
-
+    def assignment_statement_list(self):
+        """assignment_statement_list -> variable assignment_phrases 
+            assignment_phrases-> = variable assignment_phrases | = variable | = expression 
+        """
+        print(self.current_token)
+        print("assignment statement here")
         left = self.variable()
-        token = self.current_token
         self.eat(TokenType.EQUAL)
-        right = self.expr()
-        node = Assign(left, token, right)
-        return node
+        right = self.expression()
+        node = Assign(left, right)
+        nodes=[node]
+
+        while self.current_token.type == TokenType.EQUAL:
+            self.eat(TokenType.EQUAL)
+            print(self.current_token)
+            print("loop here")
+            if not isinstance(right,Var):
+                self.raise_error("Variable", type(right).__name__)
+            left= right
+            right=self.expression()
+            nodes.append(Assign(left,right))
+        
+        return AssignCollection(nodes)
     
     def empty(self):
         """An empty production"""
@@ -251,20 +257,19 @@ class Parser(object):
     
     def expression(self):
         """
-        expression : term ((PLUS | MINUS | EQUAL) term)*
+        expression : term ((PLUS | MINUS) term)*
         """
         node = self.term()
 
-        while self.current_token.type in (TokenType.PLUS, TokenType.MINUS, TokenType.EQUAL):
+        while self.current_token.type in (TokenType.PLUS, TokenType.MINUS):
             token = self.current_token
             if token.type == TokenType.PLUS:
                 self.eat(TokenType.PLUS)
             elif token.type == TokenType.MINUS:
                 self.eat(TokenType.MINUS)
-            elif token.type == TokenType.EQUAL:
-                self.eat(TokenType.EQUAL)
 
             node = BinOp(left=node, op=token, right=self.term())
+        
 
         return node
 
@@ -287,8 +292,8 @@ class Parser(object):
         """
            factor : PLUS factor
                   | MINUS factor
-                  | KW_INT
-                  | KW_FLOAT
+                  | INT
+                  | FLOAT
                   | LPAREN expr RPAREN
                   | SINGLE_QOUTE expr SINGLE_QOUTE
                   | DOUBLE_QOUTE expr DOUBLE_QOUTE
@@ -303,18 +308,19 @@ class Parser(object):
             self.eat(TokenType.MINUS)
             node = UnaryOp(token, self.factor())
             return node
-        elif token.type == TokenType.KW_INT:
-            self.eat(TokenType.KW_INT)
-            return Num(token)
-        elif token.type == TokenType.KW_FLOAT:
-            self.eat(TokenType.KW_FLOAT)
-            return Num(token)
+        elif token.type == TokenType.INT:
+            print("This is a constant"+self.current_token.value)
+            return self.constant()
+        elif token.type == TokenType.FLOAT:
+            return self.constant()
         elif token.type == TokenType.LPAREN:
             self.eat(TokenType.LPAREN)
-            node = self.expr()
+            node = self.expression()
             self.eat(TokenType.RPAREN)
             return node
         else:
+            print(self.current_token)
+            print("self.variable here")
             return self.variable()
 
     def parse_execute(self):
@@ -350,4 +356,3 @@ class Parser(object):
             self.error()
 
         return node
->>>>>>> Stashed changes

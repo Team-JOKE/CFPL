@@ -1,9 +1,4 @@
-<<<<<<< Updated upstream
-VAR a=1,b, c= 3 AS INT
-=======
-VAR a=1,b, c = 3 AS INT
-VAR d=.123 AS FLOAT
+VAR xyz, abc=100 AS INT
 START
-INPUT: c,a
+abc= 3 = xyz = ((abc *5)/10 + 10) * 10
 STOP
->>>>>>> Stashed changes

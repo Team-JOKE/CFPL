@@ -5,7 +5,7 @@ from lib.parser import Parser
 
 def main():
     text = ""
-    with open("./src/sample-source-codes/1.cfpl", "r") as file:
+    with open("sample-source-codes/1.cfpl", "r") as file:
         for line in file.readlines():
             text += line
 

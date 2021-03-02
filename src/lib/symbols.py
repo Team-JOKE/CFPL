@@ -13,5 +13,4 @@ class VariableSymbol(Symbol):
         super().__init__(name, type=type)
 
 
-class SymbolTable(object):
     
