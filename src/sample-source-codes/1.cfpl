@@ -1,1 +1,9 @@
+<<<<<<< Updated upstream
 VAR a=1,b, c= 3 AS INT
+=======
+VAR a=1,b, c = 3 AS INT
+VAR d=.123 AS FLOAT
+START
+INPUT: c,a
+STOP
+>>>>>>> Stashed changes

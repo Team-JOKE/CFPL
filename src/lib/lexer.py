@@ -11,7 +11,7 @@ class Lexer(object):
         self.current_char = text[0]
 
     def raiseError(self):
-        raise Exception("Invalid syntax")
+        raise Exception("Invalid syntax at Lexeme: "+self.current_char)
 
     def advance(self):
         self.pos += 1
@@ -48,7 +48,6 @@ class Lexer(object):
 
     def get_full_number(self) -> Token:
         # multi-digit integer or float
-        # no syntax error detection yet
         number = ""
 
         while self.current_char is not None and self.current_char.isdigit():
@@ -68,22 +67,20 @@ class Lexer(object):
 
     def get_full_char(self) -> Token:
         # character
-        # no error detection yet
-        char = "'"
+        char = "\'"
         self.advance()
 
-        while self.current_char is not None and self.current_char != "'":
+        while self.current_char is not None and self.current_char != "\'":
             char += self.current_char
             self.advance()
 
-        if self.current_char == "'":
-            char += "'"
+        if self.current_char == "\'":
+            char += "\'"
             self.advance()
 
         return Token(TokenType.CHAR, char)
 
     def get_full_boolean(self) -> Token:
-        # to be changed, applicable only to variable declaration with no error detection
         # advance for starting quotation mark
         self.advance()
 
@@ -108,14 +105,16 @@ class Lexer(object):
             if self.current_char.isspace():
                 self.skip_whitespace()
                 continue
-            elif self.current_char.isdigit():
+            elif self.current_char.isdigit() or self.current_char == '.':
                 return self.get_full_number()
             elif self.current_char.isalpha():
                 return self.get_full_identifier()
+            elif self.current_char == "\'":
+                return self.get_full_char()
             elif self.current_char == ",":
                 self.advance()
                 return Token(TokenType.COMMA, ",")
-            elif self.current_char == '"':
+            elif self.current_char == '\"':
                 return self.get_full_boolean()
             elif self.current_char == "=":
                 self.advance()
