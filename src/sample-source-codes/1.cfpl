@@ -1,7 +1,7 @@
 VAR a=100, b=200, c=300 AS INT
 VAR e,d="FALSE" AS BOOL
 START
-e = d = (a < b AND c <>200) AND ((100+50)*5 > = 1000)
+e = d = (a < b AND c <>200) AND (100+50)*10 == 1500
 a = a % 8
 STOP
 

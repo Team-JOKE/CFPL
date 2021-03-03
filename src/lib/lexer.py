@@ -147,11 +147,12 @@ class Lexer(object):
             elif self.current_char == '\"':
                 return self.get_full_boolean()
             elif self.current_char == "=":
-                self.advance()
                 if self.peek_next() == "=":
+                    self.advance()
                     self.skip_whitespace()
                     self.advance()
                     return Token(TokenType.EQUAL_EQUAL,"==")
+                self.advance()
                 return Token(TokenType.EQUAL, "=")
             elif self.current_char == "+":
                 self.advance()
