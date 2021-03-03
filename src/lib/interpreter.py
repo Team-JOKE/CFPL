@@ -87,7 +87,7 @@ class Interpreter(NodeVisitor):
                 return False
 
     def visit_BinOp(self, bin_op_node:BinOp):
-        # print("visited bin_op" +bin_op_node.left.value+bin_op_node.op.va)
+        print("visited bin_op" +str(self.visit(bin_op_node.left))+bin_op_node.op.value+str(self.visit(bin_op_node.right)))
         if bin_op_node.op.type == TokenType.PLUS:
             return self.visit(bin_op_node.left) + self.visit(bin_op_node.right)
         elif bin_op_node.op.type == TokenType.MINUS:
@@ -97,6 +97,24 @@ class Interpreter(NodeVisitor):
         # change later depending on datatypes
         elif bin_op_node.op.type == TokenType.DIV:
             return self.visit(bin_op_node.left) / self.visit(bin_op_node.right)
+        elif bin_op_node.op.type == TokenType.MODULO:
+            return self.visit(bin_op_node.left) % self.visit(bin_op_node.right)
+        elif bin_op_node.op.type == TokenType.LESS_THAN:
+            return bool(self.visit(bin_op_node.left) < self.visit(bin_op_node.right))
+        elif bin_op_node.op.type == TokenType.LESS_THAN_EQUAL:
+            return bool(self.visit(bin_op_node.left) <= self.visit(bin_op_node.right))
+        elif bin_op_node.op.type == TokenType.GREATER_THAN:
+            return bool(self.visit(bin_op_node.left) > self.visit(bin_op_node.right))
+        elif bin_op_node.op.type == TokenType.GREATER_THAN_EQUAL:
+            return bool(self.visit(bin_op_node.left) >= self.visit(bin_op_node.right))
+        elif bin_op_node.op.type == TokenType.EQUAL_EQUAL:
+            return bool(self.visit(bin_op_node.left) == self.visit(bin_op_node.right))
+        elif bin_op_node.op.type == TokenType.NOT_EQUAL:
+            return bool(self.visit(bin_op_node.left) != self.visit(bin_op_node.right))
+        elif bin_op_node.op.type == TokenType.AND:
+            return bool(self.visit(bin_op_node.left) and self.visit(bin_op_node.right))
+        elif bin_op_node.op.type == TokenType.OR:
+            return bool(self.visit(bin_op_node.left) or self.visit(bin_op_node.right))
         # elif bin_op_node.op == FLOAT_DIV:
         #     return float(self.visit(node.left)) / float(self.visit(node.right))
 

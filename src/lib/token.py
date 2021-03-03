@@ -30,6 +30,16 @@ class TokenType(Enum):
     MINUS = 18
     MUL = 19
     DIV = 20
+    OR = 24
+    AND = 25
+    NOT = 26
+    EQUAL_EQUAL=27
+    NOT_EQUAL=28
+    LESS_THAN=29
+    GREATER_THAN=30
+    GREATER_THAN_EQUAL=31
+    LESS_THAN_EQUAL=32
+    MODULO=33
 
     # etc
     IDENT = 21

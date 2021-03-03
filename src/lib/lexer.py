@@ -20,13 +20,6 @@ class Lexer(object):
         else:
             self.current_char = None
 
-    def peek(self):
-        peek_pos = self.pos + 1
-        if peek_pos > len(self.text) - 1:
-            return None
-        else:
-            return self.text[peek_pos]
-
     def get_full_identifier(self) -> Token:
         RESERVED_WORDS = {
             "VAR": Token(TokenType.VAR, "VAR"),
@@ -36,7 +29,10 @@ class Lexer(object):
             "BOOL": Token(TokenType.KW_BOOL, "KW_BOOL"),
             "FLOAT": Token(TokenType.KW_FLOAT, "KW_FLOAT"),
             "START": Token(TokenType.START,"START"),
-            "STOP": Token (TokenType.STOP,"STOP")
+            "STOP": Token (TokenType.STOP,"STOP"),
+            "OR": Token(TokenType.OR,"OR"),
+            "AND":Token(TokenType.AND,"AND"),
+            "NOT":Token(TokenType.NOT, "NOT")
         }
 
         id = ""
@@ -101,6 +97,38 @@ class Lexer(object):
     def skip_whitespace(self):
         while self.current_char is not None and self.current_char.isspace():
             self.advance()
+    def peek_next(self):
+        i=self.pos + 1
+        while self.text[i] is not None and self.text[i].isspace():
+            i+=1
+        return self.text[i]
+
+    def get_full_relational(self):
+        token:Token
+        if self.current_char == "<":
+            if self.peek_next() == "=":
+                token=Token(TokenType.LESS_THAN_EQUAL,"<=")
+                self.advance()
+                self.skip_whitespace()
+                self.advance()
+            elif self.peek_next() == ">":
+                token = Token(TokenType.NOT_EQUAL,"<>")
+                self.advance()
+                self.skip_whitespace()
+                self.advance()
+            else:
+                token=Token(TokenType.LESS_THAN,"<")
+                self.advance()
+        else:
+            if self.peek_next() == "=":
+                token=Token(TokenType.GREATER_THAN_EQUAL,">=")
+                self.advance()
+                self.skip_whitespace()
+                self.advance()
+            else:
+                token=Token(TokenType.GREATER_THAN,">")
+                self.advance()
+        return token          
 
     def get_next_token(self) -> Token:
         while self.current_char is not None:
@@ -120,6 +148,10 @@ class Lexer(object):
                 return self.get_full_boolean()
             elif self.current_char == "=":
                 self.advance()
+                if self.peek_next() == "=":
+                    self.skip_whitespace()
+                    self.advance()
+                    return Token(TokenType.EQUAL_EQUAL,"==")
                 return Token(TokenType.EQUAL, "=")
             elif self.current_char == "+":
                 self.advance()
@@ -139,5 +171,10 @@ class Lexer(object):
             elif self.current_char == ")":
                 self.advance()
                 return Token(TokenType.RPAREN,")")
+            elif self.current_char == "%":
+                self.advance()
+                return Token(TokenType.MODULO,"%")
+            elif self.current_char in ('<','>'):
+                return self.get_full_relational()
             else:
                 self.raiseError()

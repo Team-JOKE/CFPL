@@ -99,7 +99,8 @@ class Parser(object):
             if constant_token.value[len(constant_token.value)-1]!='\'':
                 self.raise_error(TokenType.CHAR, "Invalid Token")
         else:
-            if constant_token != "\"TRUE\"" and constant_token != "\"FALSE\"":
+            bool_value=constant_token.value.replace("\"","")
+            if bool_value != "TRUE" and bool_value != "FALSE":
                 self.raise_error(TokenType.BOOL, "Invalid Token")
         
         self.current_token = self.lexer.get_next_token()
@@ -255,38 +256,95 @@ class Parser(object):
         """An empty production"""
         return NoOperation()
     
+    
     def expression(self):
-        """
-        expression : term ((PLUS | MINUS) term)*
-        """
-        node = self.term()
-
-        while self.current_token.type in (TokenType.PLUS, TokenType.MINUS):
+        #expression -> or_part (OR or_part)*
+        node = self.or_part()
+        while self.current_token.type == TokenType.OR:
             token = self.current_token
-            if token.type == TokenType.PLUS:
-                self.eat(TokenType.PLUS)
-            elif token.type == TokenType.MINUS:
-                self.eat(TokenType.MINUS)
+            self.eat(TokenType.OR)
+            node= BinOp(left=node,op=token,right=self.or_part())
+        return node
+    def or_part(self):
+        #or_part -> and_part (AND and_part)*
+        node = self.and_part()
+        while self.current_token.type == TokenType.AND:
+            token=self.current_token
+            self.eat(TokenType.AND)
+            node = BinOp (left=node,op=token,right=self.and_part())
+        return node
+    def and_part(self):
+        #and_part -> rel_low_prec_part ((==|<>) rel_low_prec_part)*
+        node = self.rel_low_prec_part()
+        while self.current_token.type in (TokenType.EQUAL_EQUAL,TokenType.NOT_EQUAL):
+            token=self.current_token
+            self.eat(token.type)
+            node = BinOp (left=node,op=token,right=self.rel_low_prec_part())
+        return node
+    
+    def rel_low_prec_part(self):
+        #rel_low_prec_part -> rel_high_prec_part ((<|>|<=|>=) rel_high_prec_part)*
+        node = self.rel_high_prec_part()
+        while self.current_token.type in (TokenType.LESS_THAN,TokenType.GREATER_THAN,TokenType.LESS_THAN_EQUAL,TokenType.GREATER_THAN_EQUAL):
+            token = self.current_token
+            self.eat(token.type)
+            node = BinOp (left=node,op=token,right=self.rel_high_prec_part())
+        return node
 
-            node = BinOp(left=node, op=token, right=self.term())
+    def rel_high_prec_part(self):
+        #rel_high_prec_part -> add_part ((+|-) add_part)*
+        node = self.add_part()
+        while self.current_token.type in (TokenType.PLUS,TokenType.MINUS):
+            token = self.current_token
+            self.eat(token.type)
+            node = BinOp(left=node,op=token,right=self.add_part())
+        return node
+    
+    def add_part(self):
+        #add_part -> factor ((*|/|%) factor)*
+        node = self.factor()
+        while self.current_token.type in (TokenType.MUL,TokenType.DIV,TokenType.MODULO):
+            print("add part here")
+            print (self.current_token)
+            token=self.current_token
+            self.eat(token.type)
+            node = BinOp (left=node,op=token,right=self.factor())
+        return node
+    
+    # def expression(self):
+    #     """
+    #     expression : bool_part ((< | > | ) term)*
+    #     """
+    #     node = self.term()
+
+    #     while self.current_token.type in (TokenType.PLUS, TokenType.MINUS):
+    #         token = self.current_token
+    #         if token.type == TokenType.PLUS:
+    #             self.eat(TokenType.PLUS)
+    #         elif token.type == TokenType.MINUS:
+    #             self.eat(TokenType.MINUS)
+    #         elif token.type == TokenType.OR:
+    #             self.eat(TokenType.OR)
+
+    #         node = BinOp(left=node, op=token, right=self.term())
         
 
-        return node
+    #     return node
 
-    def term(self):
-        """term : factor ((MUL | DIV) factor)*"""
-        node = self.factor()
+    # def term(self):
+    #     """term : factor ((MUL | DIV | ) factor)*"""
+    #     node = self.factor()
 
-        while self.current_token.type in (TokenType.MUL,TokenType.DIV):
-            token = self.current_token
-            if token.type == TokenType.MUL:
-                self.eat(TokenType.MUL)
-            elif token.type == TokenType.DIV:
-                self.eat(TokenType.DIV)
+    #     while self.current_token.type in (TokenType.MUL,TokenType.DIV):
+    #         token = self.current_token
+    #         if token.type == TokenType.MUL:
+    #             self.eat(TokenType.MUL)
+    #         elif token.type == TokenType.DIV:
+    #             self.eat(TokenType.DIV)
 
-            node = BinOp(left=node, op=token, right=self.factor())
+    #         node = BinOp(left=node, op=token, right=self.factor())
 
-        return node
+    #     return node
     
     def factor(self):
         """
@@ -295,8 +353,6 @@ class Parser(object):
                   | INT
                   | FLOAT
                   | LPAREN expr RPAREN
-                  | SINGLE_QOUTE expr SINGLE_QOUTE
-                  | DOUBLE_QOUTE expr DOUBLE_QOUTE
                   | variable
         """
         token = self.current_token

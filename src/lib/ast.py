@@ -65,7 +65,7 @@ class Compound(AST):
         self.children = []
 
 class BinOp(AST):
-    def __init__(self, left, op, right):
+    def __init__(self, left, op:Token, right):
         self.left = left
         self.token = self.op = op
         self.right = right
