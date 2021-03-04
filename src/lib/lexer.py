@@ -46,7 +46,6 @@ class Lexer(object):
             id += self.current_char
             self.advance()
 
-
         # returns a token for a reserved word or a new token of type id if it is not a reserved word
         token = RESERVED_WORDS.get(id, Token(TokenType.IDENT, id))
         return token
