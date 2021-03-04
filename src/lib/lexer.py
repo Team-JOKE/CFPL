@@ -46,7 +46,6 @@ class Lexer(object):
             id += self.current_char
             self.advance()
 
-
         # returns a token for a reserved word or a new token of type id if it is not a reserved word
         token = RESERVED_WORDS.get(id, Token(TokenType.IDENT, id))
         return token
@@ -117,6 +116,9 @@ class Lexer(object):
                 return self.get_full_number()
             elif self.current_char.isalpha():
                 return self.get_full_identifier()
+            elif self.current_char == "&":
+                self.advance()
+                return Token(TokenType.AMPERSAND, "&")
             elif self.current_char == ",":
                 self.advance()
                 return Token(TokenType.COMMA, ",")
@@ -128,5 +130,17 @@ class Lexer(object):
             elif self.current_char == ":":
                 self.advance()
                 return Token(TokenType.COLON, ":")
+            elif self.current_char == "+":
+                self.advance()
+                return Token(TokenType.PLUS, "+")
+            elif self.current_char == "-":
+                self.advance()
+                return Token(TokenType.MINUS, "-")
+            elif self.current_char == "*":
+                self.advance()
+                return Token(TokenType.MUL, "*")
+            elif self.current_char == "/":
+                self.advance()
+                return Token(TokenType.DIV, "/")
             else:
                 self.raiseError()
