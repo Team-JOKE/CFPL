@@ -6,15 +6,6 @@ class Interpreter(object):
         self.parser = parser
         self.VARIABLES = {}
 
-    def visit_Program(self, node):
-        self.visit(node.block)
-
-    def visit_Block(self, node):
-        for declaration in node.declarations:
-            self.visit(declaration)
-        self.visit(node.compound_statement)
-
-
     def visit_variable_declaration_block(self, var_decl_node: VariableDeclarationBlock):
         for declaration in var_decl_node.declarations:
             self.visit_variable(declaration)
