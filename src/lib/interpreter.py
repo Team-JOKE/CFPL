@@ -68,40 +68,6 @@ class Interpreter(object):
             #raise NameError(repr(name) + ' variable not defined.')
         return value
 
-    def visit_input_values(self, variable: Variable):
-        output = ''
-        data_types = []
-        for val in variable.token.value:
-            data_types.append(self.VARIABLES[val.value])
-
-        inputs = raw_input('please input ' + str(len(variable.token.value)) + ' values separated by comma [' + ', '.join(data_types) + '] >>> ')
-        print(inputs)
-        values = inputs.split(',')
-        if len(values) != len(variable.token.value):
-            raise NameError("Invalid inputs.")
-        i = 0
-        for val in variable.token.value:
-            value = values[i]
-            data_type = self.VARIABLES[val.value]
-            if data_type == "INT":
-                value = int(value)
-            elif data_type == "FLOAT":
-                value = int(value)                
-            elif data_type == "CHAR":
-                value = value[0] if len(value) > 0 else value
-            elif data_type == "BOOL":
-                if type(value) is bool:
-                    value = 'TRUE' if value else 'FALSE'
-                value = str(value)
-                if value not in ['TRUE', 'FALSE']:
-                    value = 'FALSE'
-            else:
-                value = str(value)
-            self.assign_var_value(val.value, value)
-            i = i + 1
-
-        return variable.token.value
-
     def input_values(self, variable: Variable):
         #input variables from user executable
         name = variable.token.value
