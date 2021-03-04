@@ -1,0 +1,7 @@
+VAR a=2,b, c = 3 AS INT
+VAR ab=2.10 AS FLOAT
+VAR f= "TRUE" AS BOOL
+START
+INPUT:  ab
+OUTPUT: ab
+STOP

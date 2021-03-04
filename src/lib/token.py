@@ -14,19 +14,28 @@ class TokenType(Enum):
     KW_CHAR = 8
     KW_BOOL = 9
     KW_FLOAT = 10
-
+    KW_STRING = 11
     # data types
-    INT = 11
-    CHAR = 12
-    BOOL = 13
-    FLOAT = 14
+    INT = 12
+    CHAR = 13
+    BOOL = 14
+    FLOAT = 15
 
     # symbols
-    EQUAL = 15
-    COMMA = 16
-
+    EQUAL = 16
+    COMMA = 17
+    PLUS = 18
+    MINUS = 19
+    MUL = 20
+    INTEGER_DIV =21
+    FLOAT_DIV =22
+    COLON = 23
+    ASSIGN = 24
     # etc
-    IDENT = 17
+    IDENT = 25
+    LPAREN = 26
+    RPAREN = 27
+    AMPERSAND = 28
 
 
 class Token(object):
