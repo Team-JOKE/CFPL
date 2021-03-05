@@ -179,3 +179,4 @@ class Lexer(object):
                 return self.get_full_relational()
             else:
                 self.raiseError()
+    

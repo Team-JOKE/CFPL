@@ -5,6 +5,7 @@ class Parser(object):
     def __init__(self, lexer:Lexer):
         self.lexer = lexer
         self.current_token = self.lexer.get_next_token()
+        self.previous_token:Token = None
 
     def raise_error(self, suppposed_type, received_type):
         raise Exception(
@@ -13,55 +14,73 @@ class Parser(object):
 
     def eat(self, token_type):
         if self.current_token.type == token_type:
+            self.previous_token = self.current_token
             self.current_token = self.lexer.get_next_token()
         else:
             self.raise_error(token_type, self.current_token.type)
 
+    # def variable_declaration(self):
+    #     # testing if format follows the grammar
+    #     # VD-> 'VAR' variable_list AS data_type VD | e
+    #     nodes = []
+
+    #     while (
+    #         self.current_token is not None
+    #         and self.current_token.type != TokenType.START  # noqa
+    #     ):
+    #         self.eat(TokenType.VAR)
+    #         var_list = self.variable_list()
+    #         self.eat(TokenType.AS)
+    #         data_type = self.data_type()
+
+    #         # attach type node to all variables in variable_list
+    #         for var in var_list:
+    #             var.type_node = data_type
+    #             nodes.append(var)
+
+    #     return VariableDeclarationBlock(nodes)
+
     def variable_declaration(self):
         # testing if format follows the grammar
-        # VD-> 'VAR' variable_list AS data_type VD | e
+        # VD-> 'VAR' variable_list AS data_type | e
         nodes = []
+        self.eat(TokenType.VAR)
+        var_list = self.variable_list()
+        self.eat(TokenType.AS)
+        data_type = self.data_type()
 
-        while (
-            self.current_token is not None
-            and self.current_token.type != TokenType.START  # noqa
-        ):
-            self.eat(TokenType.VAR)
-            var_list = self.variable_list()
-            self.eat(TokenType.AS)
-            data_type = self.data_type()
+        # attach type node to all variables in variable_list
+        for var in var_list:
+            nodes.append(var)
 
-            # attach type node to all variables in variable_list
-            for var in var_list:
-                var.type_node = data_type
-                nodes.append(var)
-
-        return VariableDeclarationBlock(nodes)
+        return VariableDeclarationBlock(nodes,DataType(data_type))
 
     def variable_list(self):
         # variable_list -> variable_expression | variable_expression, variable_list
         node = self.variable_expression()
         nodes = [node]
 
-        while self.current_token.type == TokenType.COMMA:
-            self.eat(TokenType.COMMA)
+        while self.current_token.type in (TokenType.COMMA,TokenType.EQUAL):
+            if self.current_token.type == TokenType.COMMA:
+                self.eat(TokenType.COMMA)
             nodes.append(self.variable_expression())
-
-
         return nodes
 
     def variable_expression(self):
-        # variable_expression-> var_name | var_name = constant
+        # variable_expression-> var_name | assignment_statement
+        if self.current_token.type == TokenType.IDENT:
+            node = VariableDeclaration(self.current_token)
+            self.eat(TokenType.IDENT)
 
-        id_token = self.current_token
-        self.eat(TokenType.IDENT)
-        var = VariableExpression(id_token, None, None)
-
-        if self.current_token.type == TokenType.EQUAL:
+        elif self.current_token.type == TokenType.EQUAL:
+            prev_tok = self.previous_token
             self.eat(TokenType.EQUAL)
-            var.value_node = self.constant()
+            node=Assign(left=Variable(prev_tok),right=self.expression())
+        
+        else:
+            self.raise_error("Identifier or Equal", "Invalid Token")
 
-        return var
+        return node
 
     def constant(self) -> Constant:
         # for checking constants grammar correctness based on the following rules
@@ -103,7 +122,8 @@ class Parser(object):
             if bool_value != "TRUE" and bool_value != "FALSE":
                 self.raise_error(TokenType.BOOL, "Invalid Token")
         
-        self.current_token = self.lexer.get_next_token()
+
+        self.eat(self.current_token.type)
         
         return Constant(constant_token)
     
@@ -134,7 +154,12 @@ class Parser(object):
 
     def block(self):
         """block : declarations compound_statement"""
-        declaration_nodes = self.variable_declaration()
+        declaration_nodes=[]
+        while (
+            self.current_token is not None
+            and self.current_token.type != TokenType.START
+        ):
+            declaration_nodes.append(self.variable_declaration())
         compound_statement_node = self.compound_statement()
         node = Block(declaration_nodes, compound_statement_node)
         return node
@@ -194,17 +219,16 @@ class Parser(object):
 
     def input_statement(self):
         """input_statement: INPUT: (variable)*"""
-        node = VariableExpression(self.current_token,self.current_token.type,None)
+        node = Variable(self.current_token)
         var_nodes = [node]  # first ID
         self.eat(TokenType.IDENT)
         while self.current_token.type == TokenType.COMMA:
             self.eat(TokenType.COMMA)
-            node = VariableExpression(self.current_token,self.current_token.type,None)
+            node = Variable(self.current_token)
             var_nodes.append(node)
             self.eat(TokenType.IDENT)
             if self.current_token.type == TokenType.STOP or self.current_token.type == None:
                 break
-
         return var_nodes
 
     def output_statement(self):
@@ -224,7 +248,7 @@ class Parser(object):
         return terms
 
     def variable(self):
-        node = Var(self.current_token)
+        node = Variable(self.current_token)
         self.eat(TokenType.IDENT)
         return node
 
@@ -244,7 +268,7 @@ class Parser(object):
             self.eat(TokenType.EQUAL)
             print(self.current_token)
             print("loop here")
-            if not isinstance(right,Var):
+            if not isinstance(right,Variable):
                 self.raise_error("Variable", type(right).__name__)
             left= right
             right=self.expression()
@@ -348,10 +372,9 @@ class Parser(object):
     
     def factor(self):
         """
-           factor : PLUS factor
+           factor -> PLUS factor
                   | MINUS factor
-                  | INT
-                  | FLOAT
+                  | CONSTANT
                   | LPAREN expr RPAREN
                   | variable
         """
@@ -364,8 +387,7 @@ class Parser(object):
             self.eat(TokenType.MINUS)
             node = UnaryOp(token, self.factor())
             return node
-        elif token.type == TokenType.INT:
-            print("This is a constant"+self.current_token.value)
+        elif token.type in (TokenType.INT,TokenType.FLOAT,TokenType.CHAR,TokenType.BOOL):
             return self.constant()
         elif token.type == TokenType.FLOAT:
             return self.constant()
