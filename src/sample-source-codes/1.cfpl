@@ -3,5 +3,5 @@ VAR s AS BOOL
 START
     d= ((abc *5) + 10 / 5 ) * 12
     s = "TRUE" OR "FALSE" AND "FALSE" OR "FALSE"
-    INPUT: x
+    INPUT: xyz,abc
 STOP

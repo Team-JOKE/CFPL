@@ -36,18 +36,23 @@ class Interpreter(NodeVisitor):
     def raise_error(self, exception_text: str):
         raise Exception(exception_text)
 
-    def input_values(self, variable: ast.Variable):
+    def input_values(self, variable: ast.Variable, sss):
         # input variables from user executable
         name = variable.value
         var = self.VARIABLES[name]
         if var[0] == "INT":
-            value = int(input())
+            value = int(sss)
         elif var[0] == "FLOAT":
-            value = float(input())
+            value = float(sss)
         elif var[0] == "CHAR":
-            value = input()
+            value = sss
         elif var[0] == "BOOL":
-            value = bool(input())
+            if(sss == "TRUE"): 
+                value = True
+            elif(sss == "FALSE"):
+                value = False
+            else:
+                raise Exception("Invalid datatype.")
         else:
             raise Exception("Invalid datatype.")
 
@@ -215,8 +220,28 @@ class Interpreter(NodeVisitor):
 
     def visit_Input(self, input_node: ast.Input):
         variables = input_node.token.value
-        for var in variables:
-            self.input_values(var)
+        temp = input()
+        sss = []
+        val = ""
+        i = 0
+        while(i < len(temp)):
+            if(temp[i] == " "): continue
+            elif(temp[i] == ","):
+                if(len(variables) > len(sss)):
+                    sss.append(val)
+                    val=""
+                else: raise Exception("Too many inputs.")
+            else:
+                val += temp[i]
+            i+=1
+        if(len(variables) > len(sss)):
+            sss.append(val)
+        else:
+            raise Exception("Too many inputs.")
+        i=0
+
+        for var,s in zip(variables, sss):
+            self.input_values(var,s)
 
     def visit_Program(self, program_node: ast.Program):
         self.visit(program_node.block)
@@ -229,14 +254,6 @@ class Interpreter(NodeVisitor):
     def visit_AssignCollection(self, assign_collection_node: ast.AssignCollection):
         for node in reversed(assign_collection_node.assign_nodes):
             self.visit(node)
-
-    def visit_executable_block(self, exec_node: ast.Compound):
-        nodes = exec_node.children
-        for node in nodes:
-            if isinstance(node, ast.Input):
-                variables = node.token.value
-                for var in variables:
-                    self.input_values(var)
 
     def interpret(self):
         program = self.parser.parse_execute()
