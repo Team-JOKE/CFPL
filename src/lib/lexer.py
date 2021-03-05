@@ -1,5 +1,18 @@
 from lib.token import Token, TokenType
 
+RESERVED_WORDS = {
+    "VAR": Token(TokenType.VAR, "VAR"),
+    "AS": Token(TokenType.AS, "AS"),
+    "INT": Token(TokenType.KW_INT, "KW_INT"),
+    "CHAR": Token(TokenType.KW_CHAR, "KW_CHAR"),
+    "BOOL": Token(TokenType.KW_BOOL, "KW_BOOL"),
+    "FLOAT": Token(TokenType.KW_FLOAT, "KW_FLOAT"),
+    "START": Token(TokenType.START, "START"),
+    "STOP": Token(TokenType.STOP, "STOP"),
+    "INPUT": Token(TokenType.INPUT, "INPUT"),
+    "OUTPUT": Token(TokenType.OUTPUT, "OUTPUT"),
+}
+
 
 class Lexer(object):
     # handles the tokenization of the input string
@@ -28,24 +41,10 @@ class Lexer(object):
             return self.text[peek_pos]
 
     def get_full_identifier(self) -> Token:
-        RESERVED_WORDS = {
-            "VAR": Token(TokenType.VAR, "VAR"),
-            "AS": Token(TokenType.AS, "AS"),
-            "INT": Token(TokenType.KW_INT, "KW_INT"),
-            "CHAR": Token(TokenType.KW_CHAR, "KW_CHAR"),
-            "BOOL": Token(TokenType.KW_BOOL, "KW_BOOL"),
-            "FLOAT": Token(TokenType.KW_FLOAT, "KW_FLOAT"),
-            "START": Token(TokenType.START, "START"),
-            "STOP": Token(TokenType.STOP, "STOP"),
-            "INPUT": Token(TokenType.INPUT, "INPUT"),
-            "OUTPUT": Token(TokenType.OUTPUT, "OUTPUT"),
-        }
-
         id = ""
         while self.current_char is not None and self.current_char.isalnum():
             id += self.current_char
             self.advance()
-
 
         # returns a token for a reserved word or a new token of type id if it is not a reserved word
         token = RESERVED_WORDS.get(id, Token(TokenType.IDENT, id))
