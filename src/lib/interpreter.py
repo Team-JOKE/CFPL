@@ -1,4 +1,4 @@
-from lib.ast import Variable, VariableDeclarationBlock, Compound,Input
+from lib.ast import Compound, Input, Variable, VariableDeclarationBlock
 from lib.token import TokenType
 
 
@@ -33,26 +33,29 @@ class Interpreter(object):
         self.VARIABLES[name] = (var_type.name, value)
 
     def input_values(self, variable: Variable):
-        #input variables from user executable
+        # input variables from user executable
         name = variable.token.value
         var_type = variable.type_node
         var = self.VARIABLES[name]
-        if(var[0] == "INT"):
+        if var[0] == "INT":
             value = int(input())
-        elif(var[0] == "FLOAT"):
+        elif var[0] == "FLOAT":
             value = float(input())
-        elif(var[0] == "CHAR"):
+        elif var[0] == "CHAR":
             value = input()
-        elif(var[0] == "BOOL"):
+        elif var[0] == "BOOL":
             value = bool(input())
         else:
-            raise Exception(f"Invalid input. Received {variable.type} instead of {value}")
+            raise Exception(
+                f"Invalid input. Received {variable.type} instead of {var_type}"
+            )
 
         self.VARIABLES[name] = (var[0], value)
-    def visit_executable_block(self,exec_node: Compound):
+
+    def visit_executable_block(self, exec_node: Compound):
         nodes = exec_node.children
         for node in nodes:
-            if(isinstance(node, Input)):
+            if isinstance(node, Input):
                 variables = node.token.value
                 for var in variables:
                     self.input_values(var)

@@ -27,8 +27,8 @@ class TokenType(Enum):
     PLUS = 18
     MINUS = 19
     MUL = 20
-    INTEGER_DIV =21
-    FLOAT_DIV =22
+    INTEGER_DIV = 21
+    FLOAT_DIV = 22
     COLON = 23
     ASSIGN = 24
     # etc
