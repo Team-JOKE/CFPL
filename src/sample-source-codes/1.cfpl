@@ -1,4 +1,7 @@
-VAR a=1,b, c = 3 AS INT
+VAR xyz,d, abc=100 * 12, c AS INT
+VAR s AS BOOL
 START
-INPUT: c,a
+    d= ((abc *5) + 10 / 5 ) * 12
+    s = "TRUE" OR "FALSE" AND "FALSE" OR "FALSE"
+    INPUT: x
 STOP

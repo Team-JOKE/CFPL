@@ -11,6 +11,9 @@ RESERVED_WORDS = {
     "STOP": Token(TokenType.STOP, "STOP"),
     "INPUT": Token(TokenType.INPUT, "INPUT"),
     "OUTPUT": Token(TokenType.OUTPUT, "OUTPUT"),
+    "OR": Token(TokenType.OR, "OR"),
+    "AND": Token(TokenType.AND, "AND"),
+    "NOT": Token(TokenType.NOT, "NOT"),
 }
 
 
@@ -24,7 +27,7 @@ class Lexer(object):
         self.current_char = text[0]
 
     def raiseError(self):
-        raise Exception("Invalid syntax")
+        raise Exception("Invalid syntax at Lexeme: " + self.current_char)
 
     def advance(self):
         self.pos += 1
@@ -33,14 +36,8 @@ class Lexer(object):
         else:
             self.current_char = None
 
-    def peek(self):
-        peek_pos = self.pos + 1
-        if peek_pos > len(self.text) - 1:
-            return None
-        else:
-            return self.text[peek_pos]
-
     def get_full_identifier(self) -> Token:
+
         id = ""
         while self.current_char is not None and self.current_char.isalnum():
             id += self.current_char
@@ -52,7 +49,6 @@ class Lexer(object):
 
     def get_full_number(self) -> Token:
         # multi-digit integer or float
-        # no syntax error detection yet
         number = ""
 
         while self.current_char is not None and self.current_char.isdigit():
@@ -72,7 +68,6 @@ class Lexer(object):
 
     def get_full_char(self) -> Token:
         # character
-        # no error detection yet
         char = "'"
         self.advance()
 
@@ -87,7 +82,6 @@ class Lexer(object):
         return Token(TokenType.CHAR, char)
 
     def get_full_boolean(self) -> Token:
-        # to be changed, applicable only to variable declaration with no error detection
         # advance for starting quotation mark
         self.advance()
 
@@ -107,23 +101,86 @@ class Lexer(object):
         while self.current_char is not None and self.current_char.isspace():
             self.advance()
 
+    def peek_next(self):
+        i = self.pos + 1
+        while self.text[i] is not None and self.text[i].isspace():
+            i += 1
+        return self.text[i]
+
+    def get_full_relational(self):
+        token: Token
+        if self.current_char == "<":
+            if self.peek_next() == "=":
+                token = Token(TokenType.LESS_THAN_EQUAL, "<=")
+                self.advance()
+                self.skip_whitespace()
+                self.advance()
+            elif self.peek_next() == ">":
+                token = Token(TokenType.NOT_EQUAL, "<>")
+                self.advance()
+                self.skip_whitespace()
+                self.advance()
+            else:
+                token = Token(TokenType.LESS_THAN, "<")
+                self.advance()
+        else:
+            if self.peek_next() == "=":
+                token = Token(TokenType.GREATER_THAN_EQUAL, ">=")
+                self.advance()
+                self.skip_whitespace()
+                self.advance()
+            else:
+                token = Token(TokenType.GREATER_THAN, ">")
+                self.advance()
+        return token
+
     def get_next_token(self) -> Token:
         while self.current_char is not None:
             if self.current_char.isspace():
                 self.skip_whitespace()
                 continue
-            elif self.current_char.isdigit():
+            elif self.current_char.isdigit() or self.current_char == ".":
                 return self.get_full_number()
             elif self.current_char.isalpha():
                 return self.get_full_identifier()
+            elif self.current_char == "'":
+                return self.get_full_char()
             elif self.current_char == ",":
                 self.advance()
                 return Token(TokenType.COMMA, ",")
             elif self.current_char == '"':
                 return self.get_full_boolean()
             elif self.current_char == "=":
+                if self.peek_next() == "=":
+                    self.advance()
+                    self.skip_whitespace()
+                    self.advance()
+                    return Token(TokenType.EQUAL_EQUAL, "==")
                 self.advance()
                 return Token(TokenType.EQUAL, "=")
+            elif self.current_char == "+":
+                self.advance()
+                return Token(TokenType.PLUS, "+")
+            elif self.current_char == "-":
+                self.advance()
+                return Token(TokenType.MINUS, "-")
+            elif self.current_char == "*":
+                self.advance()
+                return Token(TokenType.MUL, "*")
+            elif self.current_char == "/":
+                self.advance()
+                return Token(TokenType.DIV, "/")
+            elif self.current_char == "(":
+                self.advance()
+                return Token(TokenType.LPAREN, "(")
+            elif self.current_char == ")":
+                self.advance()
+                return Token(TokenType.RPAREN, ")")
+            elif self.current_char == "%":
+                self.advance()
+                return Token(TokenType.MODULO, "%")
+            elif self.current_char in ("<", ">"):
+                return self.get_full_relational()
             elif self.current_char == ":":
                 self.advance()
                 return Token(TokenType.COLON, ":")

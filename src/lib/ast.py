@@ -5,40 +5,47 @@ class AST(object):
     pass
 
 
-class VariableDeclarationBlock(AST):
-    def __init__(self, declarations):
-        self.declarations = declarations
-
-
-# class ExecutableBlock(AST):
-#    def __init__(self, executables):
-#        self.executables = executables
-
-
 class DataType(AST):
-    def __init__(self, token: Token):
-        self.token = token
-        self.name = token.value
+    def __init__(self, value: TokenType):
+        self.value = value
 
 
-class Variable(AST):
-    def __init__(self, token: Token, type_node: TokenType, value_node):
-        self.token = token
+class VariableDeclarationBlock(AST):
+    def __init__(self, declarations, type_node: DataType):
+        self.declarations = declarations
         self.type_node = type_node
-        self.value_node = value_node
-
-
-class Assign(AST):
-    def __init__(self, left, token, right):
-        self.left = left
-        self.token = token
-        self.right = right
 
 
 class Constant(AST):
-    def __init__(self, token: TokenType):
+    def __init__(self, token: Token):
         self.token = token
         self.value = token.value
+        self.type = token.type
+
+
+class VariableDeclaration(AST):
+    def __init__(self, token: Token):
+        self.token = token
+        self.value = token.value
+
+
+class Variable(AST):
+    """The Var node is constructed out of IDENT token."""
+
+    def __init__(self, token):
+        self.token = token
+        self.value = token.value
+
+
+class Assign(AST):
+    def __init__(self, left: Variable, right):
+        self.left = left
+        self.right = right
+
+
+class AssignCollection(AST):
+    def __init__(self, assign_nodes):
+        self.assign_nodes = assign_nodes
 
 
 # ####### UNKNOWN ####### #
@@ -50,6 +57,13 @@ class Block(AST):
         self.compound_statement = compound_statement
 
 
+class BinOp(AST):
+    def __init__(self, left, op: Token, right):
+        self.left = left
+        self.op = op
+        self.right = right
+
+
 class Compound(AST):
     """Represents a 'START ... STOP' block"""
 
@@ -57,26 +71,10 @@ class Compound(AST):
         self.children = []
 
 
-class BinOp(AST):
-    def __init__(self, left, op, right):
-        self.left = left
-        self.token = self.op = op
-        self.right = right
-
-
 class Num(AST):
     def __init__(self, token):
         self.token = token
         self.value = token.value
-
-
-class Var(AST):
-    """The Var node is constructed out of IDENT token."""
-
-    def __init__(self, token):
-        self.token = token
-        self.value = token.value
-        self.default_value = None
 
 
 class Program(AST):
