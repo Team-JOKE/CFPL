@@ -14,38 +14,44 @@ class TokenType(Enum):
     KW_CHAR = 8
     KW_BOOL = 9
     KW_FLOAT = 10
+    KW_STRING = 11
 
     # data types
-    INT = 11
-    CHAR = 12
-    BOOL = 13
-    FLOAT = 14
+    INT = 12
+    CHAR = 13
+    BOOL = 14
+    FLOAT = 15
 
     # symbols
-    EQUAL = 15
-    COMMA = 16
+    EQUAL = 16
+    COMMA = 17
 
-    #operators
-    PLUS = 17
-    MINUS = 18
-    MUL = 19
-    DIV = 20
-    OR = 24
-    AND = 25
-    NOT = 26
-    EQUAL_EQUAL=27
-    NOT_EQUAL=28
-    LESS_THAN=29
-    GREATER_THAN=30
-    GREATER_THAN_EQUAL=31
-    LESS_THAN_EQUAL=32
-    MODULO=33
+    # operators
+    PLUS = 18
+    MINUS = 19
+    MUL = 20
+    DIV = 21
+
+    # logical
+    OR = 22
+    AND = 23
+    NOT = 24
+    EQUAL_EQUAL = 25
+    NOT_EQUAL = 26
+    LESS_THAN = 27
+    GREATER_THAN = 28
+    GREATER_THAN_EQUAL = 29
+    LESS_THAN_EQUAL = 30
+    MODULO = 31
 
     # etc
-    IDENT = 21
-    LPAREN=22
-    RPAREN=23
-    
+    COLON = 32
+    ASSIGN = 33
+    LPAREN = 34
+    RPAREN = 35
+    AMPERSAND = 36
+    IDENT = 37
+
 
 class Token(object):
     # contains type and value of a Token
