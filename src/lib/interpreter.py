@@ -45,6 +45,8 @@ class Interpreter(NodeVisitor):
         elif var[0] == "FLOAT":
             value = float(sss)
         elif var[0] == "CHAR":
+            value = sss[0]
+        elif var[0] == "STRING":
             value = sss
         elif var[0] == "BOOL":
             if(sss == "TRUE"): 
@@ -217,6 +219,28 @@ class Interpreter(NodeVisitor):
             )
 
         self.VARIABLES[assign_node.left.value][1] = right_value
+
+    def visit_UnaryOp(self, unary_node: ast.UnaryOp):
+        operator = unary_node.token.value
+        expression = self.visit(unary_node.expr)
+        if(operator == "-"):
+            value = -1
+        elif(operator == "+"):
+            value = 1
+        else:
+            self.raise_error(
+                "Unary Error: could not assign "
+                + operator
+                + "on variable.")
+
+        if(isinstance(expression ,str)):
+            print("geeee")
+            self.raise_error(
+                "Unary Error: could not assign '"
+                + operator
+                + "' on variable type CHAR / STRING")
+
+        return value * expression
 
     def visit_Input(self, input_node: ast.Input):
         variables = input_node.token.value

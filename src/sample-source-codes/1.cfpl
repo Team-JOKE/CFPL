@@ -1,7 +1,6 @@
-VAR xyz,d, abc=100 * 12, c AS INT
-VAR s AS BOOL
+VAR d AS INT
+VAR f AS FLOAT
 START
-    d= ((abc *5) + 10 / 5 ) * 12
-    s = "TRUE" OR "FALSE" AND "FALSE" OR "FALSE"
-    INPUT: xyz,abc
+    d = -(9 + 9)
+    f = -(1+1) - 2.0
 STOP
