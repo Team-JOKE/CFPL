@@ -227,7 +227,7 @@ class Parser(object):
             if self.current_token.type == TokenType.KW_STRING:
                 terms.append(self.expr())
             if self.current_token.type == TokenType.IDENT:
-                terms.append(self.variable_expression())
+                terms.append(self.variable())
             if (
                 self.lexer.pos < current_pos
                 or self.current_token.type != TokenType.AMPERSAND
