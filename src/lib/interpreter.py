@@ -242,7 +242,41 @@ class Interpreter(NodeVisitor):
 
         for var,s in zip(variables, sss):
             self.input_values(var,s)
-
+    def Output_values(self,variable: ast.Variable):
+        name = variable.value
+        return str(self.VARIABLES[name][1])
+    
+    def visit_Output(self,output_node: ast.Output):
+        output = ""
+        for val in output_node.value:
+            if type(val).__name__ == 'Variable':
+                val_name = val.value
+                val = self.VARIABLES[val_name]
+                data_type = self.VARIABLES[val_name]
+                if data_type == "INT":
+                    val = int(val)
+                    print(val)
+                elif data_type == "FLOAT":
+                    val = float(val)
+                elif data_type == " ":
+                    continue
+                elif data_type == "CHAR":
+                    val = val[0] if len(val) > 0 else val
+                elif data_type == "BOOL":
+                    if type(val) is bool:
+                        val = "TRUE" if val else "FALSE"
+                    val = str(val)
+                    if val not in ["TRUE", "FALSE"]:
+                        val = "FALSE"
+                else:
+                    val = str(val)
+            else:
+                val = val.value
+            output += str(val)
+            
+        print(output)
+        return output_node.value
+    
     def visit_Program(self, program_node: ast.Program):
         self.visit(program_node.block)
 
