@@ -184,5 +184,8 @@ class Lexer(object):
             elif self.current_char == ":":
                 self.advance()
                 return Token(TokenType.COLON, ":")
+            elif self.current_char == "&":
+                self.advance()
+                return Token(TokenType.AMPERSAND, "&")
             else:
                 self.raiseError()
