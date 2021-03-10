@@ -242,7 +242,7 @@ class Interpreter(NodeVisitor):
 
         for var,s in zip(variables, sss):
             self.input_values(var,s)
-    def Output_values(self,variable: ast.Variable):
+    def output_values(self,variable: ast.Variable):
         name = variable.value
         return str(self.VARIABLES[name][1])
     
