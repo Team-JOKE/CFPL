@@ -221,26 +221,40 @@ class Interpreter(NodeVisitor):
         self.VARIABLES[assign_node.left.value][1] = right_value
 
     def visit_UnaryOp(self, unary_node: ast.UnaryOp):
-        operator = unary_node.token.value
+        operator = unary_node.token.type
         expression = self.visit(unary_node.expr)
-        if(operator == "-"):
-            value = -1
-        elif(operator == "+"):
-            value = 1
+        result = None
+
+        if(expression == "TRUE" or expression == "FALSE"):
+            expression = expression == "TRUE"
+        else:
+            self.check_instance(expression,operator,str)
+
+        if(operator == TokenType.MINUS):
+            result = -1 * expression
+        elif(operator == TokenType.PLUS):
+            result = expression
+        elif(operator == TokenType.NOT):
+            if(not isinstance(expression,bool)):
+                self.check_instance(expression,operator,float)
+                self.check_instance(expression,operator,int)
+
+            result = not expression
         else:
             self.raise_error(
                 "Unary Error: could not assign "
                 + operator
                 + "on variable.")
 
-        if(isinstance(expression ,str)):
-            print("geeee")
+        return result
+
+    def check_instance(self,expression, operator, datatype):
+        #for unary checking
+        if(isinstance(expression ,datatype)):
             self.raise_error(
                 "Unary Error: could not assign '"
-                + operator
-                + "' on variable type CHAR / STRING")
-
-        return value * expression
+                + str(operator)
+                + "' on variable type " + str(datatype))
 
     def visit_Input(self, input_node: ast.Input):
         variables = input_node.token.value
@@ -248,14 +262,21 @@ class Interpreter(NodeVisitor):
         sss = []
         val = ""
         i = 0
+        isspace = False
+
         while(i < len(temp)):
-            if(temp[i] == " "): continue
+            if(temp[i] == " "):
+                if(len(val)> 0):
+                    isspace = True
             elif(temp[i] == ","):
                 if(len(variables) > len(sss)):
                     sss.append(val)
+                    isspace=False
                     val=""
                 else: raise Exception("Too many inputs.")
             else:
+                if(isspace):
+                    raise Exception("input syntax error.")
                 val += temp[i]
             i+=1
         if(len(variables) > len(sss)):

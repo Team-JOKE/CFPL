@@ -339,6 +339,7 @@ class Parser(object):
         """
         factor -> PLUS factor
                | MINUS factor
+               | NOT factor
                | CONSTANT
                | LPAREN expr RPAREN
                | variable
@@ -350,6 +351,10 @@ class Parser(object):
             return node
         elif token.type == TokenType.MINUS:
             self.eat(TokenType.MINUS)
+            node = ast.UnaryOp(token, self.factor())
+            return node
+        elif token.type == TokenType.NOT:
+            self.eat(TokenType.NOT)
             node = ast.UnaryOp(token, self.factor())
             return node
         elif token.type in (

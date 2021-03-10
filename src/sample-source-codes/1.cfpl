@@ -1,6 +1,6 @@
-VAR d AS INT
-VAR f AS FLOAT
+VAR b AS BOOL
+VAR a,c AS INT
 START
-    d = -(9 + 9)
-    f = -(1+1) - 2.0
+    b = NOT ("FALSE" OR "TRUE")
+    INPUT: a,c
 STOP
