@@ -4,5 +4,5 @@ START
     d= ((abc *5) + 10 / 5 ) * 12
     s = "TRUE" OR "FALSE" AND "FALSE" OR "FALSE"
     INPUT: xyz,abc
-    OUTPUT: d
+    OUTPUT: d & s & abc
 STOP
