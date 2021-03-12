@@ -24,10 +24,10 @@ class Interpreter(NodeVisitor):
                     TokenType.CHAR: "",
                     TokenType.FLOAT: 0.0,
                 }
-                print(
-                    "DEFAULT VALUE HERE"
-                    + str(DEFAULT_VALUES.get(var_decl_node.type_node.value))
-                )
+                # print(
+                #     "DEFAULT VALUE HERE"
+                #     + str(DEFAULT_VALUES.get(var_decl_node.type_node.value))
+                # )
                 if self.VARIABLES[declaration.value][1] is None:
                     self.VARIABLES[declaration.value][1] = DEFAULT_VALUES.get(
                         var_decl_node.type_node.value
@@ -47,9 +47,9 @@ class Interpreter(NodeVisitor):
         elif var[0] == "CHAR":
             value = sss
         elif var[0] == "BOOL":
-            if(sss == "TRUE"): 
+            if sss == "TRUE":
                 value = True
-            elif(sss == "FALSE"):
+            elif sss == "FALSE":
                 value = False
             else:
                 raise Exception("Invalid datatype.")
@@ -76,7 +76,7 @@ class Interpreter(NodeVisitor):
             self.VARIABLES[var_dec_node.value] = [None, None]
 
     def visit_Constant(self, constant_node: ast.Constant):
-        print("constant value" + constant_node.value)
+        # print("constant value" + constant_node.value)
         if constant_node.type == TokenType.INT:
             return int(constant_node.value)
         elif constant_node.type == TokenType.FLOAT:
@@ -107,7 +107,7 @@ class Interpreter(NodeVisitor):
         left = self.visit(bin_op_node.left)
         right = self.visit(bin_op_node.right)
 
-        print("visit bin_op here" + str(left) + bin_op_node.op.value + str(right))
+        # print("visit bin_op here" + str(left) + bin_op_node.op.value + str(right))
 
         left_type: type = type(left)
         right_type: type = type(right)
@@ -224,38 +224,40 @@ class Interpreter(NodeVisitor):
         sss = []
         val = ""
         i = 0
-        while(i < len(temp)):
-            if(temp[i] == " "): continue
-            elif(temp[i] == ","):
-                if(len(variables) > len(sss)):
+        while i < len(temp):
+            if temp[i] == " ":
+                continue
+            elif temp[i] == ",":
+                if len(variables) > len(sss):
                     sss.append(val)
-                    val=""
-                else: raise Exception("Too many inputs.")
+                    val = ""
+                else:
+                    raise Exception("Too many inputs.")
             else:
                 val += temp[i]
-            i+=1
-        if(len(variables) > len(sss)):
+            i += 1
+        if len(variables) > len(sss):
             sss.append(val)
         else:
             raise Exception("Too many inputs.")
-        i=0
+        i = 0
 
-        for var,s in zip(variables, sss):
-            self.input_values(var,s)
-            
-    def visit_Output(self,output_node: ast.Output):
+        for var, s in zip(variables, sss):
+            self.input_values(var, s)
+
+    def visit_Output(self, output_node: ast.Output):
         output = ""
         for val in output_node.value:
-            if type(val).__name__ == 'Variable':
+            if type(val).__name__ == "Variable":
                 val_name = val.value
                 val = self.VARIABLES[val_name][1]
             else:
                 val = val.value
             output += str(val)
-            
+
         print(output)
         return output_node.value
-    
+
     def visit_Program(self, program_node: ast.Program):
         self.visit(program_node.block)
 

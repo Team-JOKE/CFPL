@@ -1,0 +1,9 @@
+VAR foo AS INT
+VAR bar AS BOOL
+START
+    foo = 1 * 2 * 3
+    bar = "TRUE" AND "FALSE"
+    OUTPUT: foo
+    OUTPUT: bar
+    OUTPUT: foo & bar & bar & foo
+STOP

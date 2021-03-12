@@ -1,6 +1,7 @@
 from lib import ast
 from lib.lexer import Lexer
 from lib.token import Token, TokenType
+from lib.utils import is_keyword
 
 
 class Parser(object):
@@ -8,6 +9,7 @@ class Parser(object):
         self.lexer = lexer
         self.current_token = self.lexer.get_next_token()
         self.previous_token: Token = None
+        self.KEYWORDS_ENCOUNTERED = []
 
     def raise_error(self, suppposed_type, received_type):
         raise Exception(
@@ -15,11 +17,31 @@ class Parser(object):
         )
 
     def eat(self, token_type):
+        if is_keyword(self.current_token):
+            self.KEYWORDS_ENCOUNTERED.append(self.current_token.type.name)
+
         if self.current_token.type == token_type:
             self.previous_token = self.current_token
             self.current_token = self.lexer.get_next_token()
         else:
             self.raise_error(token_type, self.current_token.type)
+
+    def output_statement(self):
+        """output_statement : expression (& expression)*"""
+        terms = []
+        while True:
+            if self.current_token.type == TokenType.IDENT:
+                terms.append(self.variable())
+
+            # stopping condition
+            if self.current_token.type != TokenType.AMPERSAND:
+                break
+
+            # continue condition
+            if self.current_token.type == TokenType.AMPERSAND:
+                self.eat(TokenType.AMPERSAND)
+
+        return terms
 
     def variable_declaration(self):
         """Variable: 'VAR' variable_list AS data_type
@@ -219,24 +241,6 @@ class Parser(object):
                 break
         return var_nodes
 
-    def output_statement(self):
-        """output_statement : expression (& expression)*"""
-        terms = []
-        current_pos = self.lexer.pos
-        while True:
-            if self.current_token.type == TokenType.KW_STRING:
-                terms.append(self.expr())
-            if self.current_token.type == TokenType.IDENT:
-                terms.append(self.variable())
-            if (
-                self.lexer.pos < current_pos
-                or self.current_token.type != TokenType.AMPERSAND
-            ):
-                break
-            if self.current_token.type == TokenType.AMPERSAND:
-                self.eat(TokenType.AMPERSAND)
-        return terms
-
     def variable(self):
         node = ast.Variable(self.current_token)
         self.eat(TokenType.IDENT)
@@ -246,8 +250,8 @@ class Parser(object):
         """assignment_statement_list -> variable assignment_phrases
         assignment_phrases-> = variable assignment_phrases | = variable | = expression
         """
-        print(self.current_token)
-        print("assignment statement here")
+        # print(self.current_token)
+        # print("assignment statement here")
         left = self.variable()
         self.eat(TokenType.EQUAL)
         right = self.expression()
@@ -256,8 +260,8 @@ class Parser(object):
 
         while self.current_token.type == TokenType.EQUAL:
             self.eat(TokenType.EQUAL)
-            print(self.current_token)
-            print("loop here")
+            # print(self.current_token)
+            # print("loop here")
             if not isinstance(right, ast.Variable):
                 self.raise_error("Variable", type(right).__name__)
             left = right
@@ -328,8 +332,8 @@ class Parser(object):
             TokenType.DIV,
             TokenType.MODULO,
         ):
-            print("add part here")
-            print(self.current_token)
+            # print("add part here")
+            # print(self.current_token)
             token = self.current_token
             self.eat(token.type)
             node = ast.BinOp(left=node, op=token, right=self.factor())
@@ -365,8 +369,8 @@ class Parser(object):
             self.eat(TokenType.RPAREN)
             return node
         else:
-            print(self.current_token)
-            print("self.variable here")
+            # print(self.current_token)
+            # print("self.variable here")
             return self.variable()
 
     def parse_execute(self):

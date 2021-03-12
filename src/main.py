@@ -5,7 +5,7 @@ from lib.parser import Parser
 
 def main():
     text = ""
-    with open("sample-source-codes/1.cfpl", "r") as file:
+    with open("src/sample-source-codes/2.cfpl", "r") as file:
         for line in file.readlines():
             text += line
 
@@ -13,7 +13,8 @@ def main():
     parser = Parser(lexer)
     interpreter = Interpreter(parser)
     interpreter.interpret()
-    print(interpreter.VARIABLES)
+    # print(interpreter.VARIABLES)
+    print(parser.KEYWORDS_ENCOUNTERED)
 
 
 if __name__ == "__main__":
