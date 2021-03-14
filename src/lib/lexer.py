@@ -184,6 +184,8 @@ class Lexer(object):
                 self.advance()
                 return Token(TokenType.COMMA, ",")
             elif self.current_char == '"':
+                #self.advance()
+                #return self.string()
                 return self.get_full_boolean()
             elif self.current_char == "=":
                 if self.peek_next() == "=":
