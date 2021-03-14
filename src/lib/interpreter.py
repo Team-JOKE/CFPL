@@ -244,17 +244,75 @@ class Interpreter(NodeVisitor):
             self.input_values(var,s)
             
     def visit_Output(self,output_node: ast.Output):
-        output = ""
+        output = ''
         for val in output_node.value:
             if type(val).__name__ == 'Variable':
+                if val.value not in self.VARIABLES:
+                    raise NameError(repr(val.value) + " variable is not defined.")
                 val_name = val.value
                 val = self.VARIABLES[val_name][1]
+                data_type = self.VARIABLES[val_name]
+                if data_type == TokenType.INT:
+                    val = int(val)
+                elif data_type == TokenType.FLOAT:
+                    val = float(val)
+                elif data_type == TokenType.CHAR:
+                    val = val[0] if len(val) > 0 else val
+                elif data_type == TokenType.BOOL:
+                    if type(val) is bool:
+                        val = 'TRUE' if val else 'FALSE'
+                    val = str(val)
+                    if val not in ['TRUE', 'FALSE']:
+                        val = str(val)
+                else:
+                    val = str(val)
             else:
                 val = val.value
             output += str(val)
-            
         print(output)
         return output_node.value
+        #output = ""
+        #for val in output_node.value:
+        #    if type(val).__name__ == 'Variable':
+        #        val_name = val.value
+        #        val = self.VARIABLES[val_name][1]
+        #    elif val == "'":
+        #        continue
+        #    elif val == TokenType.KW_STRING:
+        #            output += str(val)
+        #    else:
+        #        val = val.value
+        #    output += str(val)
+        #print(output)
+        #return output_node.value
+    def visit_IfStatement(self, if_statement: ast.IfStatement):
+        val_expr = self.visit(if_statement.expr)
+        if val_expr and val_expr != 'FALSE':
+            values = [if_statement.value]
+            if type(if_statement.value).__name__ == 'list':
+                values = []
+                for val in if_statement.value:
+                    values.append(val)
+            for val in values:
+                self.visit(val)
+        elif if_statement.els is not None:
+            self.visit(if_statement.els)
+        return if_statement.value
+
+    def visit_WhileStatement(self, WhileStatement: ast.WhileStatement):
+        while True:
+            val_expr = self.visit(WhileStatement.expr)
+            if not val_expr or val_expr == 'FALSE':
+                break
+            values = [WhileStatement.value]
+            if type(WhileStatement.value).__name__ == 'list':
+                values = []
+                for val in WhileStatement.value:
+                    values.append(val)
+            for val in values:
+                self.visit(val)
+                
+        return WhileStatement.value
     
     def visit_Program(self, program_node: ast.Program):
         self.visit(program_node.block)
