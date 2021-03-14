@@ -80,6 +80,41 @@ class Lexer(object):
             self.advance()
 
         return Token(TokenType.CHAR, char)
+###### escape code #######
+    def look_back(self, step=1):
+        back_pos = self.pos - step
+        if back_pos > len(self.text) - 1:
+            return None
+        else:
+            return self.text[back_pos]
+    def peek(self, step=1):
+        peek_pos = self.pos + step
+        if peek_pos > len(self.text) - 1:
+            return None
+        else:
+            return self.text[peek_pos]
+    def string(self):
+        result = ''
+        while self.current_char is not None:
+            if self.current_char == '[' and self.peek(2) == ']': # first
+                self.advance()
+                continue
+            if self.look_back() == '[' and self.peek() == ']': # middle
+                result += self.current_char
+                self.advance()
+                continue
+            if self.current_char == ']' and self.look_back(2) == '[': # last
+                self.advance()
+                continue
+            if self.current_char == '"':
+                self.advance()
+                break
+            result += self.current_char
+            self.advance()
+        if result in ['TRUE', 'FALSE']:
+            return Token(TokenType.BOOL, result)
+        return Token(TokenType.KW_STRING, result)
+####### end here #######
 
     def get_full_boolean(self) -> Token:
         # advance for starting quotation mark
@@ -187,5 +222,11 @@ class Lexer(object):
             elif self.current_char == "&":
                 self.advance()
                 return Token(TokenType.AMPERSAND, "&")
+            elif self.current_char == "[":
+                self.advance()
+                return Token(TokenType.LBRACE, "[")
+            elif self.current_char == "]":
+                self.advance()
+                return Token(TokenType.RBRACE, "]")
             else:
                 self.raiseError()
