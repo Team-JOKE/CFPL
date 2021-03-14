@@ -51,6 +51,13 @@ class TokenType(Enum):
     RPAREN = 35
     AMPERSAND = 36
     IDENT = 37
+    
+    IF = 38
+    ELSE = 39
+    WHILE = 40
+    LBRACE = 41
+    RBRACE = 42
+
 
 
 class Token(object):
