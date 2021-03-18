@@ -80,7 +80,7 @@ class Lexer(object):
             self.advance()
 
         return Token(TokenType.CHAR, char)
-###### escape code #######
+###### escape code and next line output #######
     def look_back(self, step=1):
         back_pos = self.pos - step
         if back_pos > len(self.text) - 1:
@@ -93,8 +93,8 @@ class Lexer(object):
             return None
         else:
             return self.text[peek_pos]
-    def string(self):
-        result = ''
+    def get_string(self):
+        result = ""
         while self.current_char is not None:
             if self.current_char == '[' and self.peek(2) == ']': # first
                 self.advance()
@@ -109,7 +109,7 @@ class Lexer(object):
             if self.current_char == '"':
                 self.advance()
                 break
-            result += self.current_char
+            result += self.current_char if self.current_char != '#' else "\n"
             self.advance()
         if result in ['TRUE', 'FALSE']:
             return Token(TokenType.BOOL, result)
@@ -184,9 +184,9 @@ class Lexer(object):
                 self.advance()
                 return Token(TokenType.COMMA, ",")
             elif self.current_char == '"':
-                #self.advance()
-                #return self.string()
-                return self.get_full_boolean()
+                self.advance()
+                return self.get_string()
+                #return self.get_full_boolean()
             elif self.current_char == "=":
                 if self.peek_next() == "=":
                     self.advance()
