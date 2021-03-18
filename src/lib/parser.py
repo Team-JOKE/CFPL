@@ -100,6 +100,10 @@ class Parser(object):
                 self.raise_error(TokenType.CHAR, "Invalid Token")
             if constant_token.value[len(constant_token.value) - 1] != "'":
                 self.raise_error(TokenType.CHAR, "Invalid Token")
+        elif constant_token.type == TokenType.KW_STRING:
+            string_value = constant_token.value.replace('"',"")
+            if string_value == "TRUE" and string_value == "FALSE":
+                self.raise_error(TokenType.KW_STRING, "Invalid Token")
         else:
             bool_value = constant_token.value.replace('"', "")
             if bool_value != "TRUE" and bool_value != "FALSE":
@@ -357,6 +361,7 @@ class Parser(object):
             TokenType.FLOAT,
             TokenType.CHAR,
             TokenType.BOOL,
+            TokenType.KW_STRING,
         ):
             return self.constant()
         elif token.type == TokenType.LPAREN:
