@@ -182,6 +182,8 @@ class Parser(object):
         """statement : input_statement
         | output_statement
         | assignment_statement_list
+        |WHILE
+        |IF
         | empty"""
 
         if self.current_token.type == TokenType.START:
@@ -198,9 +200,19 @@ class Parser(object):
             self.eat(TokenType.COLON)
             self.current_token.value = self.input_statement()
             node = ast.Input(self.current_token)
+        elif self.current_token.type == TokenType.WHILE:
+            node = self.while_statement()
         else:
             node = self.empty()
         return node
+    
+    def while_statement(self):
+        self.eat(TokenType.WHILE)
+        self.eat(TokenType.LPAREN)
+        condition_node = self.expression()
+        self.eat(TokenType.RPAREN)
+        compound_statement_node = self.compound_statement()
+        return ast.While(condition_node,compound_statement_node)
 
     def input_statement(self):
         """input_statement: INPUT: (variable)*"""

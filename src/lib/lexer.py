@@ -14,6 +14,7 @@ RESERVED_WORDS = {
     "OR": Token(TokenType.OR, "OR"),
     "AND": Token(TokenType.AND, "AND"),
     "NOT": Token(TokenType.NOT, "NOT"),
+    "WHILE":Token(TokenType.WHILE,"WHILE")
 }
 
 

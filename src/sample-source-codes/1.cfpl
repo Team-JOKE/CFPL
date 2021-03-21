@@ -1,7 +1,11 @@
-VAR xyz,d, abc=100 * 12, c AS INT
+VAR xyz,d, abc=100 * 12, c, x AS INT
 VAR s AS BOOL
 START
     d= ((abc *5) + 10 / 5 ) * 12
     s = "TRUE" OR "FALSE" AND "FALSE" OR "FALSE"
-    INPUT: x
+    x = 1
+    WHILE(x < 10)
+    START
+        x = x + 1
+    STOP
 STOP

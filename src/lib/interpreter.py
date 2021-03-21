@@ -238,6 +238,14 @@ class Interpreter(NodeVisitor):
                 for var in variables:
                     self.input_values(var)
 
+    def visit_While(self, while_node:ast.While):
+        condition = self.visit(while_node.condition_node)
+        if type(condition) != bool:
+            print("Invalid condition for while loop")
+            return
+        while(self.visit(while_node.condition_node)):
+            self.visit(while_node.compound_statement_node)
+
     def interpret(self):
         program = self.parser.parse_execute()
         self.visit(program)
