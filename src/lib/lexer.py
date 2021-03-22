@@ -111,6 +111,10 @@ class Lexer(object):
             i += 1
         return self.text[i]
 
+    def get_comment(self):
+        while self.current_char is not None and self.current_char != '\\':
+            self.advance()
+
     def get_full_relational(self):
         token: Token
         if self.current_char == "<":
@@ -147,6 +151,14 @@ class Lexer(object):
                 return self.get_full_number()
             elif self.current_char.isalpha():
                 return self.get_full_identifier()
+            elif self.current_char == "\\":
+                self.advance()
+                if(self.current_char == "n"):
+                    self.advance()
+                    if(self.current_char == "*"):
+                        self.get_comment()
+                else:
+                    self.raiseError()
             elif self.current_char == "'":
                 return self.get_full_char()
             elif self.current_char == ",":
