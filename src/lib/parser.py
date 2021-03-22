@@ -191,8 +191,9 @@ class Parser(object):
         elif self.current_token.type == TokenType.OUTPUT:
             self.eat(TokenType.OUTPUT)
             self.eat(TokenType.COLON)
+            expression = self.expression()
             self.current_token.value = self.output_statement()
-            node = ast.Output(self.current_token)
+            node = ast.Output(self.current_token, expression)
         elif self.current_token.type == TokenType.INPUT:
             self.eat(TokenType.INPUT)
             self.eat(TokenType.COLON)
