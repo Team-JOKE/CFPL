@@ -245,6 +245,7 @@ class Interpreter(NodeVisitor):
             
     def visit_Output(self,output_node: ast.Output):
         output = ''
+        output += str(self.visit(output_node.expr))
         for val in output_node.value:
             if type(val).__name__ == 'Variable':
                 if val.value not in self.VARIABLES:
