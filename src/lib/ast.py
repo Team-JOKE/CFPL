@@ -110,8 +110,11 @@ class NoOperation(AST):
     pass
 
 
-class Output(Num):
-    pass
+class Output(AST):
+    def __init__(self, token, expr):
+        self.token = token
+        self.value = token.value
+        self.expr = expr
 
 
 class Input(Num):
