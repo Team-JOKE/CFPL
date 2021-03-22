@@ -16,7 +16,10 @@ class TokenType(Enum):
     KW_FLOAT = 10
     KW_STRING = 11
     WHILE = 38
-    
+    IF = 39
+    ELSEIF = 40
+    ELSE = 41
+
 
     # data types
     INT = 12
