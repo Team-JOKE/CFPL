@@ -14,6 +14,9 @@ RESERVED_WORDS = {
     "OR": Token(TokenType.OR, "OR"),
     "AND": Token(TokenType.AND, "AND"),
     "NOT": Token(TokenType.NOT, "NOT"),
+    "IF": Token(TokenType.IF, "IF"),
+    "ELSE": Token(TokenType.ELSE, "ELSE"),
+    "WHILE": Token(TokenType.WHILE, "WHILE")
 }
 
 
@@ -80,7 +83,7 @@ class Lexer(object):
             self.advance()
 
         return Token(TokenType.CHAR, char)
-###### escape code #######
+###### escape code and next line output #######
     def look_back(self, step=1):
         back_pos = self.pos - step
         if back_pos > len(self.text) - 1:
@@ -93,15 +96,19 @@ class Lexer(object):
             return None
         else:
             return self.text[peek_pos]
-    def string(self):
-        result = ''
+    def get_string(self):
+        result = ""
         while self.current_char is not None:
             if self.current_char == '[' and self.peek(2) == ']': # first
                 self.advance()
                 continue
             if self.look_back() == '[' and self.peek() == ']': # middle
-                result += self.current_char
-                self.advance()
+                if self.current_char in ['!,''@','#','$','%','^','&','*','(',')','-','+','?','_','=',',','<','>','/',',','[',']']:
+                    result += self.current_char
+                    self.advance()
+                else:
+                    raise Exception("Invalid syntax :"+self.look_back() +"" + self.current_char +""+self.peek())
+                    break
                 continue
             if self.current_char == ']' and self.look_back(2) == '[': # last
                 self.advance()
@@ -109,7 +116,13 @@ class Lexer(object):
             if self.current_char == '"':
                 self.advance()
                 break
-            result += self.current_char
+            if self.current_char == '[':
+                raise Exception("Invalid syntax")
+                break
+            if self.current_char == ']':
+                raise Exception("Invalid syntax")
+                break
+            result += self.current_char if self.current_char != '#' else "\n"
             self.advance()
         if result in ['TRUE', 'FALSE']:
             return Token(TokenType.BOOL, result)
@@ -135,6 +148,8 @@ class Lexer(object):
     def skip_whitespace(self):
         while self.current_char is not None and self.current_char.isspace():
             self.advance()
+
+    
 
     def peek_next(self):
         i = self.pos + 1
@@ -184,9 +199,9 @@ class Lexer(object):
                 self.advance()
                 return Token(TokenType.COMMA, ",")
             elif self.current_char == '"':
-                #self.advance()
-                #return self.string()
-                return self.get_full_boolean()
+                self.advance()
+                return self.get_string()
+                #return self.get_full_boolean()
             elif self.current_char == "=":
                 if self.peek_next() == "=":
                     self.advance()
