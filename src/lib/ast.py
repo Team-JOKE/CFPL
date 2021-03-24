@@ -111,10 +111,13 @@ class NoOperation(AST):
 
 
 class Output(AST):
-    def __init__(self, token, expr):
+    def __init__(self,children):
+        self.children = children
+
+class StringExpression(AST):
+    def __init__(self, token):
         self.token = token
         self.value = token.value
-        self.expr = expr
 
 
 class Input(Num):
