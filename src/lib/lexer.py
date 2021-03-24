@@ -107,7 +107,7 @@ class Lexer(object):
                     result += self.current_char
                     self.advance()
                 else:
-                    raise Exception("Invalid syntax :"+self.look_back() +"" + self.current_char +""+self.peek())
+                    raise Exception("Invalid syntax : "+ self.current_char)
                     break
                 continue
             if self.current_char == ']' and self.look_back(2) == '[': # last
