@@ -242,50 +242,16 @@ class Interpreter(NodeVisitor):
 
         for var,s in zip(variables, sss):
             self.input_values(var,s)
-            
+    
+    def visit_StringExpression(self,string_node: ast.StringExpression):
+        return string_node.value
+    
     def visit_Output(self,output_node: ast.Output):
         output = ''
-        output += str(self.visit(output_node.expr))
-        for val in output_node.value:
-            if type(val).__name__ == 'Variable':
-                if val.value not in self.VARIABLES:
-                    raise NameError(repr(val.value) + " variable is not defined.")
-                val_name = val.value
-                val = self.VARIABLES[val_name][1]
-                data_type = self.VARIABLES[val_name]
-                if data_type == TokenType.INT:
-                    val = int(val)
-                elif data_type == TokenType.FLOAT:
-                    val = float(val)
-                elif data_type == TokenType.CHAR:
-                    val = val[0] if len(val) > 0 else val
-                elif data_type == TokenType.BOOL:
-                    if type(val) is bool:
-                        val = 'TRUE' if val else 'FALSE'
-                    val = str(val)
-                    if val not in ['TRUE', 'FALSE']:
-                        val = str(val)
-                else:
-                    val = str(val)
-            else:
-                val = val.value
-            output += str(val)
+        for node in output_node.children:
+            output += str(self.visit(node))
         print(output)
-        return output_node.value
-        #output = ""
-        #for val in output_node.value:
-        #    if type(val).__name__ == 'Variable':
-        #        val_name = val.value
-        #        val = self.VARIABLES[val_name][1]
-        #    elif val == "'":
-        #        continue
-        #    elif val == TokenType.KW_STRING:
-        #            output += str(val)
-        #    else:
-        #        val = val.value
-        #    output += str(val)
-        #print(output)
-        #return output_node.value
+    
     def visit_IfStatement(self, if_statement: ast.IfStatement):
         val_expr = self.visit(if_statement.expr)
         if val_expr and val_expr != 'FALSE':
