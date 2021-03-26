@@ -1,0 +1,9 @@
+VAR foo AS BOOL
+VAR bar, baz, bee AS INT
+
+START
+    foo = NOT ("FALSE" OR "TRUE")
+    baz = 1
+    bar = -baz
+    bee = +baz
+STOP
