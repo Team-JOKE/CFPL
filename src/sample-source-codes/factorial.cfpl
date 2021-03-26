@@ -1,0 +1,12 @@
+VAR n, fact = 1, i AS INT
+START
+    OUTPUT:"This program gets the factorial of a number # Enter a number: "
+    INPUT: n
+    i = 1
+    WHILE (i < = n)
+    START
+        fact = fact * i
+        i = i + 1
+    STOP
+    OUTPUT:"Factorial of " & n & " is: " & fact
+STOP

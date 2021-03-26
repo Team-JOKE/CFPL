@@ -1,6 +1,17 @@
-VAR xyz,d, abc_1=100 * 12, c, x AS INT
+VAR xyz,d, abc_1= 100 * 12, c, x, y AS INT
 VAR s AS BOOL
 *   h w eh  aw g e j aw gejhgawhj
 START
-OUTPUT: s & s
+    x = xyz = 1
+    WHILE (x < = 10)
+    START
+        y = 1
+        WHILE (y <= 10)
+        START
+            xyz = xyz + 1
+            y = y + 1
+        STOP
+    x = x + 1
+    STOP
+    OUTPUT: "Final value of xyz: " & xyz
 STOP

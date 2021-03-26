@@ -5,4 +5,5 @@ START
     START
         foo = foo + 1
     STOP
+    OUTPUT: foo
 STOP

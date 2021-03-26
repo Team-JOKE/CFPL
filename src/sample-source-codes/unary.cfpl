@@ -6,4 +6,6 @@ START
     baz = 1
     bar = -baz
     bee = +baz
+
+    OUTPUT: foo & bar & baz & bee
 STOP

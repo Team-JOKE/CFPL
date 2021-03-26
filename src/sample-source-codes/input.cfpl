@@ -1,4 +1,5 @@
 VAR foo, bar AS INT
 START
     INPUT: foo, bar
+    OUTPUT: foo & bar
 STOP

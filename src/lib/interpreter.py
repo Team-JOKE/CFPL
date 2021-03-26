@@ -35,6 +35,8 @@ class Interpreter(NodeVisitor):
     def input_values(self, variable: ast.Variable, sss):
         # input variables from user executable
         name = variable.value
+        if self.VARIABLES.get(name) is None:
+            self.raise_error("Undeclared Variable: " + name)
         var = self.VARIABLES[name]
         if var[0] == "INT":
             value = int(sss)
@@ -200,7 +202,7 @@ class Interpreter(NodeVisitor):
         var_type = self.VARIABLES[assign_node.left.value][0]
         right_value_type = self.get_type_name(type(right_value))
         if var_type != right_value_type:
-            if not(var_type == "FLOAT" and right_value_type=="INT"):
+            if not (var_type == "FLOAT" and right_value_type == "INT"):
                 self.raise_error(
                     "Assignment Error: could not assign type "
                     + right_value_type
