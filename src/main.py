@@ -7,7 +7,7 @@ def main():
     text = ""
     with open("sample-source-codes/1.cfpl", "r") as file:
         for line in file.readlines():
-            text += line
+            text += line + "\\n"
 
     lexer = Lexer(text)
     parser = Parser(lexer)

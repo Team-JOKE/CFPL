@@ -29,6 +29,23 @@ class VariableDeclaration(AST):
         self.value = token.value
 
 
+class While(AST):
+    def __init__(self, condition_node, compound_statement_node):
+        self.condition_node = condition_node
+        self.compound_statement_node = compound_statement_node
+
+
+class If(AST):
+    def __init__(self, condition_node, compound_statement_node):
+        self.condition_node = condition_node
+        self.compound_statement_node = compound_statement_node
+
+
+class Cascading_If(AST):
+    def __init__(self, if_nodes):
+        self.if_nodes = if_nodes
+
+
 class Variable(AST):
     """The Var node is constructed out of IDENT token."""
 

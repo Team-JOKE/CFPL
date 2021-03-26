@@ -52,6 +52,12 @@ class TokenType(Enum):
     AMPERSAND = 36
     IDENT = 37
 
+    # control structures
+    WHILE = 38
+    IF = 39
+    ELSEIF = 40
+    ELSE = 41
+
 
 class Token(object):
     # contains type and value of a Token

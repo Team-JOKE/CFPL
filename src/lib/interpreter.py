@@ -47,9 +47,9 @@ class Interpreter(NodeVisitor):
         elif var[0] == "CHAR":
             value = sss
         elif var[0] == "BOOL":
-            if(sss == "TRUE"): 
+            if sss == "TRUE":
                 value = True
-            elif(sss == "FALSE"):
+            elif sss == "FALSE":
                 value = False
             else:
                 raise Exception("Invalid datatype.")
@@ -224,24 +224,26 @@ class Interpreter(NodeVisitor):
         sss = []
         val = ""
         i = 0
-        while(i < len(temp)):
-            if(temp[i] == " "): continue
-            elif(temp[i] == ","):
-                if(len(variables) > len(sss)):
+        while i < len(temp):
+            if temp[i] == " ":
+                continue
+            elif temp[i] == ",":
+                if len(variables) > len(sss):
                     sss.append(val)
-                    val=""
-                else: raise Exception("Too many inputs.")
+                    val = ""
+                else:
+                    raise Exception("Too many inputs.")
             else:
                 val += temp[i]
-            i+=1
-        if(len(variables) > len(sss)):
+            i += 1
+        if len(variables) > len(sss):
             sss.append(val)
         else:
             raise Exception("Too many inputs.")
-        i=0
+        i = 0
 
-        for var,s in zip(variables, sss):
-            self.input_values(var,s)
+        for var, s in zip(variables, sss):
+            self.input_values(var, s)
 
     def visit_Program(self, program_node: ast.Program):
         self.visit(program_node.block)
@@ -254,6 +256,37 @@ class Interpreter(NodeVisitor):
     def visit_AssignCollection(self, assign_collection_node: ast.AssignCollection):
         for node in reversed(assign_collection_node.assign_nodes):
             self.visit(node)
+
+    def visit_executable_block(self, exec_node: ast.Compound):
+        nodes = exec_node.children
+        for node in nodes:
+            if isinstance(node, ast.Input):
+                variables = node.token.value
+                for var in variables:
+                    self.input_values(var)
+
+    def visit_While(self, while_node: ast.While):
+        condition = self.visit(while_node.condition_node)
+        if type(condition) != bool:
+            self.raise_error("Invalid condition for while statement")
+        else:
+            while self.visit(while_node.condition_node):
+                self.visit(while_node.compound_statement_node)
+
+    def visit_If(self, if_node: ast.If):
+        condition = self.visit(if_node.condition_node)
+        if type(condition) != bool:
+            self.raise_error("Invalid condition for if statement")
+        else:
+            if condition:
+                self.visit(if_node.compound_statement_node)
+        return condition
+
+    def visit_Cascading_If(self, cascading_if_node: ast.Cascading_If):
+        for if_node in cascading_if_node.if_nodes:
+            if_executed = self.visit(if_node)
+            if if_executed:
+                break
 
     def interpret(self):
         program = self.parser.parse_execute()
