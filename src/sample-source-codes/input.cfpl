@@ -1,0 +1,4 @@
+VAR foo, bar AS INT
+START
+    INPUT: foo, bar
+STOP

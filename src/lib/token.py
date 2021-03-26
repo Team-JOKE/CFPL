@@ -15,6 +15,7 @@ class TokenType(Enum):
     KW_BOOL = 9
     KW_FLOAT = 10
     KW_STRING = 11
+
     # data types
     INT = 12
     CHAR = 13
@@ -24,23 +25,43 @@ class TokenType(Enum):
     # symbols
     EQUAL = 16
     COMMA = 17
+
+    # operators
     PLUS = 18
     MINUS = 19
     MUL = 20
-    INTEGER_DIV =21
-    FLOAT_DIV =22
-    COLON = 23
-    ASSIGN = 24
+    DIV = 21
+
+    # logical
+    OR = 22
+    AND = 23
+    NOT = 24
+    EQUAL_EQUAL = 25
+    NOT_EQUAL = 26
+    LESS_THAN = 27
+    GREATER_THAN = 28
+    GREATER_THAN_EQUAL = 29
+    LESS_THAN_EQUAL = 30
+    MODULO = 31
+
     # etc
-    IDENT = 25
-    LPAREN = 26
-    RPAREN = 27
-    AMPERSAND = 28
+    COLON = 32
+    ASSIGN = 33
+    LPAREN = 34
+    RPAREN = 35
+    AMPERSAND = 36
+    IDENT = 37
+
+    # control structures
+    WHILE = 38
+    IF = 39
+    ELSEIF = 40
+    ELSE = 41
 
 
 class Token(object):
     # contains type and value of a Token
-    def __init__(self, type: TokenType, value):
+    def __init__(self, type: TokenType, value: str):
         self.type = type
         self.value = value
 
