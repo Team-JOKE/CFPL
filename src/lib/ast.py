@@ -106,21 +106,6 @@ class String(Num):
     pass
 
 
-class IfStatement(AST):
-    def __init__(self, token, expr, els=None):
-        self.token = token
-        self.value = token.value
-        self.expr = expr
-        self.els = els
-
-
-class WhileStatement(AST):
-    def __init__(self, token, expr):
-        self.token = token
-        self.value = token.value
-        self.expr = expr
-
-
 class Program(AST):
     def __init__(self, block):
         self.block = block

@@ -1,4 +1,3 @@
-
 VAR foo, bar AS INT
 VAR baz AS BOOL
 START
