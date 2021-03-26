@@ -14,10 +14,10 @@ RESERVED_WORDS = {
     "OR": Token(TokenType.OR, "OR"),
     "AND": Token(TokenType.AND, "AND"),
     "NOT": Token(TokenType.NOT, "NOT"),
-    "WHILE":Token(TokenType.WHILE,"WHILE"),
-    "IF" : Token(TokenType.IF,"IF"),
-    "ELSEIF":Token(TokenType.ELSEIF,"ELSEIF"),
-    "ELSE":Token(TokenType.ELSE,"ELSE")
+    "WHILE": Token(TokenType.WHILE, "WHILE"),
+    "IF": Token(TokenType.IF, "IF"),
+    "ELSEIF": Token(TokenType.ELSEIF, "ELSEIF"),
+    "ELSE": Token(TokenType.ELSE, "ELSE"),
 }
 
 
@@ -112,7 +112,7 @@ class Lexer(object):
         return self.text[i]
 
     def get_comment(self):
-        while self.current_char is not None and self.current_char != '\\':
+        while self.current_char is not None and self.current_char != "\\":
             self.advance()
 
     def get_full_relational(self):
@@ -153,9 +153,9 @@ class Lexer(object):
                 return self.get_full_identifier()
             elif self.current_char == "\\":
                 self.advance()
-                if(self.current_char == "n"):
+                if self.current_char == "n":
                     self.advance()
-                    if(self.current_char == "*"):
+                    if self.current_char == "*":
                         self.get_comment()
                 else:
                     self.raiseError()

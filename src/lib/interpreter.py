@@ -238,15 +238,15 @@ class Interpreter(NodeVisitor):
                 for var in variables:
                     self.input_values(var)
 
-    def visit_While(self, while_node:ast.While):
+    def visit_While(self, while_node: ast.While):
         condition = self.visit(while_node.condition_node)
         if type(condition) != bool:
             self.raise_error("Invalid condition for while statement")
         else:
-            while(self.visit(while_node.condition_node)):
+            while self.visit(while_node.condition_node):
                 self.visit(while_node.compound_statement_node)
-    
-    def visit_If(self,if_node:ast.If):
+
+    def visit_If(self, if_node: ast.If):
         condition = self.visit(if_node.condition_node)
         if type(condition) != bool:
             self.raise_error("Invalid condition for if statement")
@@ -255,15 +255,11 @@ class Interpreter(NodeVisitor):
                 self.visit(if_node.compound_statement_node)
         return condition
 
-    def visit_Cascading_If(self,cascading_if_node:ast.Cascading_If):
+    def visit_Cascading_If(self, cascading_if_node: ast.Cascading_If):
         for if_node in cascading_if_node.if_nodes:
             if_executed = self.visit(if_node)
             if if_executed:
                 break
-    
-    
-                
-        
 
     def interpret(self):
         program = self.parser.parse_execute()

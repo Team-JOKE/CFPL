@@ -20,7 +20,6 @@ class TokenType(Enum):
     ELSEIF = 40
     ELSE = 41
 
-
     # data types
     INT = 12
     CHAR = 13

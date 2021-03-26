@@ -205,22 +205,22 @@ class Parser(object):
         elif self.current_token.type == TokenType.IF:
             node = self.cascading_if_statement()
         elif self.current_token.type == TokenType.ELSEIF:
-            raise(Exception("ELSEIF statement must be preceeded with an If"))
+            raise (Exception("ELSEIF statement must be preceeded with an If"))
         elif self.current_token.type == TokenType.ELSE:
-            raise(Exception("ELSE statement must be preceeded with an If"))
+            raise (Exception("ELSE statement must be preceeded with an If"))
         else:
             node = self.empty()
         return node
-    
+
     def cascading_if_statement(self):
-        #if_statement->if(expression)compound_statement (elseif_statement)* [else_statement]
+        # if_statement->if(expression)compound_statement (elseif_statement)* [else_statement]
         if_nodes = []
         self.eat(TokenType.IF)
         self.eat(TokenType.LPAREN)
         condition_node = self.expression()
         self.eat(TokenType.RPAREN)
         compound_statement_node = self.compound_statement()
-        if_nodes.append(ast.If(condition_node,compound_statement_node))
+        if_nodes.append(ast.If(condition_node, compound_statement_node))
 
         while self.current_token.type == TokenType.ELSEIF:
             self.eat(TokenType.ELSEIF)
@@ -228,16 +228,15 @@ class Parser(object):
             condition_node = self.expression()
             self.eat(TokenType.RPAREN)
             compound_statement_node = self.compound_statement()
-            if_nodes.append(ast.If(condition_node,compound_statement_node))
-        
+            if_nodes.append(ast.If(condition_node, compound_statement_node))
+
         if self.current_token.type == TokenType.ELSE:
             self.eat(TokenType.ELSE)
-            condition_node = ast.Constant(Token(TokenType.BOOL,"TRUE"))
+            condition_node = ast.Constant(Token(TokenType.BOOL, "TRUE"))
             compound_statement_node = self.compound_statement()
-            if_nodes.append(ast.If(condition_node,compound_statement_node))
-        
-        return ast.Cascading_If(if_nodes)
+            if_nodes.append(ast.If(condition_node, compound_statement_node))
 
+        return ast.Cascading_If(if_nodes)
 
     def while_statement(self):
         self.eat(TokenType.WHILE)
@@ -245,7 +244,7 @@ class Parser(object):
         condition_node = self.expression()
         self.eat(TokenType.RPAREN)
         compound_statement_node = self.compound_statement()
-        return ast.While(condition_node,compound_statement_node)
+        return ast.While(condition_node, compound_statement_node)
 
     def input_statement(self):
         """input_statement: INPUT: (variable)*"""
