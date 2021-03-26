@@ -20,7 +20,6 @@ RESERVED_WORDS = {
     "ELSE": Token(TokenType.ELSE, "ELSE"),
 }
 
-
 class Lexer(object):
     # handles the tokenization of the input string
     # syntax checking

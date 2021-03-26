@@ -1,0 +1,28 @@
+VAR score AS INT
+VAR ans='Y' AS CHAR
+START
+
+    WHILE (ans == 'Y' OR ans == 'y' )
+    START
+        OUTPUT: "Enter a score: "
+        INPUT : score
+        IF (score > 90)
+        START
+            OUTPUT: "A"
+        STOP
+        ELSEIF (score > 80)
+        START
+            OUTPUT: "B"
+        STOP
+        ELSEIF (score > 70)
+        START
+            OUTPUT:"C"
+        STOP
+        ELSE
+        START
+            OUTPUT:"D"
+        STOP
+        OUTPUT:"# Would you like to try again? "
+        INPUT: ans
+    STOP
+STOP
