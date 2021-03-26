@@ -5,9 +5,9 @@ from lib.parser import Parser
 
 def main():
     text = ""
-    with open("src/sample-source-codes/test7.cfpl", "r") as file:
+    with open("src/sample-source-codes/test1.cfpl", "r") as file:
         for line in file.readlines():
-            text += line + "\\n"
+            text += line.lstrip() + "\\n"
 
     lexer = Lexer(text)
     parser = Parser(lexer)
