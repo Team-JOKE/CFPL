@@ -68,7 +68,7 @@ class Parser(object):
             if prev_tok.type == TokenType.IDENT:
                 node = ast.Assign(left=ast.Variable(prev_tok), right=self.expression())
             else:
-                raise(Exception("Parse Error: Incorrect variable expression"))
+                raise (Exception("Parse Error: Incorrect variable expression"))
         else:
             raise (Exception("Parse Error: Incorrect variable expression"))
 
@@ -456,7 +456,9 @@ class Parser(object):
         elif token.type == TokenType.LPAREN:
             self.eat(TokenType.LPAREN)
             node = self.expression()
-            self.eat(TokenType.RPAREN,error_string="Are you missing a right parenthesis? ")
+            self.eat(
+                TokenType.RPAREN, error_string="Are you missing a right parenthesis? "
+            )
             return node
         elif self.current_token.type == TokenType.IDENT:
             return self.variable()
@@ -493,6 +495,6 @@ class Parser(object):
         node = ast.Program(block_node)
 
         if self.current_token is not None:
-            self.error()
+            raise Exception("Parse Error: Stop Keyword already encountered")
 
         return node

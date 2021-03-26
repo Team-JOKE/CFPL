@@ -293,9 +293,9 @@ class Interpreter(NodeVisitor):
         for node in output_node.children:
             temp = self.visit(node)
             if type(temp) == bool:
-                if temp == True:
+                if temp:
                     output += "TRUE"
-                elif temp == False:
+                else:
                     output += "FALSE"
             else:
                 output += str(temp)
