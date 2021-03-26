@@ -109,7 +109,7 @@ class Lexer(object):
                 self.advance()
                 continue
             if self.look_back() == "[" and self.peek() == "]":  # middle
-                if self.current_char in ["#", "[", "]", '"']:
+                if self.current_char in ["#", "[", "]", '"', "&"]:
                     result += self.current_char
                     self.advance()
                 else:
