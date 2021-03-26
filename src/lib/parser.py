@@ -73,6 +73,7 @@ class Parser(object):
         # char -> 'character'|''
         # boolean -> "TRUE"|"FALSE"
         # num_list -> num num_list | e
+
         constant_token = self.current_token
         if constant_token.type == TokenType.INT:  # check if all characters are digits
             for c in constant_token.value:
@@ -100,6 +101,8 @@ class Parser(object):
                 self.raise_error(TokenType.CHAR, "Invalid Token")
             if constant_token.value[len(constant_token.value) - 1] != "'":
                 self.raise_error(TokenType.CHAR, "Invalid Token")
+        # elif constant_token.type == TokenType.KW_STRING:
+        #     string_value = constant_token.value.replace('"', "")
         else:
             bool_value = constant_token.value.replace('"', "")
             if bool_value != "TRUE" and bool_value != "FALSE":
@@ -193,8 +196,7 @@ class Parser(object):
         elif self.current_token.type == TokenType.OUTPUT:
             self.eat(TokenType.OUTPUT)
             self.eat(TokenType.COLON)
-            self.current_token.value = self.output_statement()
-            node = ast.Output(self.current_token)
+            node = self.output_statement()
         elif self.current_token.type == TokenType.INPUT:
             self.eat(TokenType.INPUT)
             self.eat(TokenType.COLON)
@@ -264,22 +266,24 @@ class Parser(object):
         return var_nodes
 
     def output_statement(self):
-        """output_statement : expression (& expression)*"""
-        terms = []
-        current_pos = self.lexer.pos
-        while True:
+        children = []
+        if self.current_token.type == TokenType.KW_STRING:
+            node = ast.StringExpression(self.current_token)
+            self.eat(self.current_token.type)
+            children.append(node)
+        else:
+            node = self.expression()
+            children.append(node)
+        while self.current_token.type == TokenType.AMPERSAND:
+            self.eat(TokenType.AMPERSAND)
             if self.current_token.type == TokenType.KW_STRING:
-                terms.append(self.expr())
-            if self.current_token.type == TokenType.IDENT:
-                terms.append(self.variable_expression())
-            if (
-                self.lexer.pos < current_pos
-                or self.current_token.type != TokenType.AMPERSAND
-            ):
-                break
-            if self.current_token.type == TokenType.AMPERSAND:
-                self.eat(TokenType.AMPERSAND)
-        return terms
+                node = ast.StringExpression(self.current_token)
+                self.eat(self.current_token.type)
+                children.append(node)
+            else:
+                node = self.expression()
+                children.append(node)
+        return ast.Output(children)
 
     def variable(self):
         node = ast.Variable(self.current_token)
@@ -290,8 +294,6 @@ class Parser(object):
         """assignment_statement_list -> variable assignment_phrases
         assignment_phrases-> = variable assignment_phrases | = variable | = expression
         """
-        print(self.current_token)
-        print("assignment statement here")
         left = self.variable()
         self.eat(TokenType.EQUAL)
         right = self.expression()
@@ -300,8 +302,6 @@ class Parser(object):
 
         while self.current_token.type == TokenType.EQUAL:
             self.eat(TokenType.EQUAL)
-            print(self.current_token)
-            print("loop here")
             if not isinstance(right, ast.Variable):
                 self.raise_error("Variable", type(right).__name__)
             left = right
@@ -314,13 +314,37 @@ class Parser(object):
         """An empty production"""
         return ast.NoOperation()
 
+    def if_statement(self):
+        """
+        output_statement : expr (& expr)*
+        """
+        terms = []
+        current_pos = self.lexer.pos
+        while True:
+            if self.current_token.type == TokenType.KW_STRING:
+                term = self.expression()
+                terms.append(ast.StringExpression(self.current_token, term))
+
+            if self.current_token.type == TokenType.IDENT:
+                terms.append(self.variable())
+            if (
+                self.lexer.pos < current_pos
+                or self.current_token.type != TokenType.AMPERSAND
+            ):
+                break
+            if self.current_token.type == TokenType.AMPERSAND:
+                self.eat(TokenType.AMPERSAND)
+        return terms
+
     def expression(self):
         # expression -> or_part (OR or_part)*
+
         node = self.or_part()
         while self.current_token.type == TokenType.OR:
             token = self.current_token
             self.eat(TokenType.OR)
             node = ast.BinOp(left=node, op=token, right=self.or_part())
+
         return node
 
     def or_part(self):
@@ -372,8 +396,6 @@ class Parser(object):
             TokenType.DIV,
             TokenType.MODULO,
         ):
-            print("add part here")
-            print(self.current_token)
             token = self.current_token
             self.eat(token.type)
             node = ast.BinOp(left=node, op=token, right=self.factor())
@@ -406,6 +428,7 @@ class Parser(object):
             TokenType.FLOAT,
             TokenType.CHAR,
             TokenType.BOOL,
+            TokenType.KW_STRING,
         ):
             return self.constant()
         elif token.type == TokenType.LPAREN:
@@ -414,8 +437,6 @@ class Parser(object):
             self.eat(TokenType.RPAREN)
             return node
         else:
-            print(self.current_token)
-            print("self.variable here")
             return self.variable()
 
     def parse_execute(self):

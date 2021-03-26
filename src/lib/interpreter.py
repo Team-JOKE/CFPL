@@ -24,10 +24,6 @@ class Interpreter(NodeVisitor):
                     TokenType.CHAR: "",
                     TokenType.FLOAT: 0.0,
                 }
-                print(
-                    "DEFAULT VALUE HERE"
-                    + str(DEFAULT_VALUES.get(var_decl_node.type_node.value))
-                )
                 if self.VARIABLES[declaration.value][1] is None:
                     self.VARIABLES[declaration.value][1] = DEFAULT_VALUES.get(
                         var_decl_node.type_node.value
@@ -78,7 +74,6 @@ class Interpreter(NodeVisitor):
             self.VARIABLES[var_dec_node.value] = [None, None]
 
     def visit_Constant(self, constant_node: ast.Constant):
-        print("constant value" + constant_node.value)
         if constant_node.type == TokenType.INT:
             return int(constant_node.value)
         elif constant_node.type == TokenType.FLOAT:
@@ -108,8 +103,6 @@ class Interpreter(NodeVisitor):
     def visit_BinOp(self, bin_op_node: ast.BinOp):
         left = self.visit(bin_op_node.left)
         right = self.visit(bin_op_node.right)
-
-        print("visit bin_op here" + str(left) + bin_op_node.op.value + str(right))
 
         left_type: type = type(left)
         right_type: type = type(right)
@@ -289,6 +282,15 @@ class Interpreter(NodeVisitor):
 
         for var, s in zip(variables, sss):
             self.input_values(var, s)
+
+    def visit_StringExpression(self, string_node: ast.StringExpression):
+        return string_node.value
+
+    def visit_Output(self, output_node: ast.Output):
+        output = ""
+        for node in output_node.children:
+            output += str(self.visit(node))
+        print(output)
 
     def visit_Program(self, program_node: ast.Program):
         self.visit(program_node.block)
