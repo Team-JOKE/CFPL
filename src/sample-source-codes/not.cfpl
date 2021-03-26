@@ -1,0 +1,5 @@
+VAR b AS BOOL
+VAR a,c AS INT
+START
+    b = NOT ("FALSE" OR "TRUE")
+STOP

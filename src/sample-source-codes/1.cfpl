@@ -1,6 +1,26 @@
-VAR b AS BOOL
-VAR a,c AS INT
+VAR xyz,d, abc=100 * 12, c, x AS INT
+VAR s AS BOOL
+*h w eh  aw g e j aw gejhgawhj
 START
-    b = NOT ("FALSE" OR "TRUE")
-    INPUT: a,c
+    d= 0
+    c = 0
+    abc = 0
+    s = "TRUE" OR "FALSE" AND "FALSE" OR "FALSE"
+    x = 1
+    WHILE(x <= 10)
+    START
+        IF (x ==1 OR x == 3)
+        START
+          abc = abc + 1
+        STOP
+        ELSEIF (x == 4 OR x == 5)
+        START
+            d = d + 1
+        STOP
+        ELSE
+        START
+            c = c + 1
+        STOP
+        x = x + 1
+    STOP
 STOP
