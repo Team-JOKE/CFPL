@@ -14,9 +14,10 @@ RESERVED_WORDS = {
     "OR": Token(TokenType.OR, "OR"),
     "AND": Token(TokenType.AND, "AND"),
     "NOT": Token(TokenType.NOT, "NOT"),
+    "WHILE": Token(TokenType.WHILE, "WHILE"),
     "IF": Token(TokenType.IF, "IF"),
+    "ELSEIF": Token(TokenType.ELSEIF, "ELSEIF"),
     "ELSE": Token(TokenType.ELSE, "ELSE"),
-    "WHILE": Token(TokenType.WHILE, "WHILE")
 }
 
 
@@ -83,51 +84,55 @@ class Lexer(object):
             self.advance()
 
         return Token(TokenType.CHAR, char)
-###### escape code and next line output #######
+
+    ###### escape code and next line output #######
     def look_back(self, step=1):
         back_pos = self.pos - step
         if back_pos > len(self.text) - 1:
             return None
         else:
             return self.text[back_pos]
+
     def peek(self, step=1):
         peek_pos = self.pos + step
         if peek_pos > len(self.text) - 1:
             return None
         else:
             return self.text[peek_pos]
+
     def get_string(self):
         result = ""
         while self.current_char is not None:
-            if self.current_char == '[' and self.peek(2) == ']': # first
+            if self.current_char == "[" and self.peek(2) == "]":  # first
                 self.advance()
                 continue
-            if self.look_back() == '[' and self.peek() == ']': # middle
-                if self.current_char in ['#','[',']']:
+            if self.look_back() == "[" and self.peek() == "]":  # middle
+                if self.current_char in ["#", "[", "]"]:
                     result += self.current_char
                     self.advance()
                 else:
-                    raise Exception("Invalid syntax : "+ self.current_char)
+                    raise Exception("Invalid syntax : " + self.current_char)
                     break
                 continue
-            if self.current_char == ']' and self.look_back(2) == '[': # last
+            if self.current_char == "]" and self.look_back(2) == "[":  # last
                 self.advance()
                 continue
             if self.current_char == '"':
                 self.advance()
                 break
-            if self.current_char == '[':
+            if self.current_char == "[":
                 raise Exception("Invalid syntax")
                 break
-            if self.current_char == ']':
+            if self.current_char == "]":
                 raise Exception("Invalid syntax")
                 break
-            result += self.current_char if self.current_char != '#' else "\n"
+            result += self.current_char if self.current_char != "#" else "\n"
             self.advance()
-        if result in ['TRUE', 'FALSE']:
+        if result in ["TRUE", "FALSE"]:
             return Token(TokenType.BOOL, result)
         return Token(TokenType.KW_STRING, result)
-####### end here #######
+
+    ####### end here #######
 
     def get_full_boolean(self) -> Token:
         # advance for starting quotation mark
@@ -149,13 +154,15 @@ class Lexer(object):
         while self.current_char is not None and self.current_char.isspace():
             self.advance()
 
-    
-
     def peek_next(self):
         i = self.pos + 1
         while self.text[i] is not None and self.text[i].isspace():
             i += 1
         return self.text[i]
+
+    def get_comment(self):
+        while self.current_char is not None and self.current_char != "\\":
+            self.advance()
 
     def get_full_relational(self):
         token: Token
@@ -193,6 +200,14 @@ class Lexer(object):
                 return self.get_full_number()
             elif self.current_char.isalpha():
                 return self.get_full_identifier()
+            elif self.current_char == "\\":
+                self.advance()
+                if self.current_char == "n":
+                    self.advance()
+                    if self.current_char == "*":
+                        self.get_comment()
+                else:
+                    self.raiseError()
             elif self.current_char == "'":
                 return self.get_full_char()
             elif self.current_char == ",":
@@ -201,7 +216,7 @@ class Lexer(object):
             elif self.current_char == '"':
                 self.advance()
                 return self.get_string()
-                #return self.get_full_boolean()
+                # return self.get_full_boolean()
             elif self.current_char == "=":
                 if self.peek_next() == "=":
                     self.advance()

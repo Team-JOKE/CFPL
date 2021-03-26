@@ -29,6 +29,23 @@ class VariableDeclaration(AST):
         self.value = token.value
 
 
+class While(AST):
+    def __init__(self, condition_node, compound_statement_node):
+        self.condition_node = condition_node
+        self.compound_statement_node = compound_statement_node
+
+
+class If(AST):
+    def __init__(self, condition_node, compound_statement_node):
+        self.condition_node = condition_node
+        self.compound_statement_node = compound_statement_node
+
+
+class Cascading_If(AST):
+    def __init__(self, if_nodes):
+        self.if_nodes = if_nodes
+
+
 class Variable(AST):
     """The Var node is constructed out of IDENT token."""
 
@@ -76,6 +93,7 @@ class Num(AST):
         self.token = token
         self.value = token.value
 
+
 class Char(Num):
     pass
 
@@ -86,6 +104,7 @@ class Bool(Num):
 
 class String(Num):
     pass
+
 
 class IfStatement(AST):
     def __init__(self, token, expr, els=None):
@@ -101,6 +120,7 @@ class WhileStatement(AST):
         self.value = token.value
         self.expr = expr
 
+
 class Program(AST):
     def __init__(self, block):
         self.block = block
@@ -111,8 +131,9 @@ class NoOperation(AST):
 
 
 class Output(AST):
-    def __init__(self,children):
+    def __init__(self, children):
         self.children = children
+
 
 class StringExpression(AST):
     def __init__(self, token):

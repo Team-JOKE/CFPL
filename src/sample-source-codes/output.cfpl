@@ -1,0 +1,16 @@
+
+VAR foo, bar AS INT
+VAR baz AS BOOL
+START
+    bar = 4
+    foo = 2 + bar * 1 / 1
+    baz = "FALSE" OR "FALSE"
+    OUTPUT: (1 + 2 / 3 + 4) & foo
+    OUTPUT: foo
+    OUTPUT: bar
+    OUTPUT: baz
+    OUTPUT: 1 + 12
+    OUTPUT: foo & 1 & "#FALSE"
+    OUTPUT: "[[]" & "[]]"
+    OUTPUT: "Hello World!"
+STOP

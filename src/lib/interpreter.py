@@ -45,11 +45,13 @@ class Interpreter(NodeVisitor):
         elif var[0] == "FLOAT":
             value = float(sss)
         elif var[0] == "CHAR":
+            value = sss[0]
+        elif var[0] == "STRING":
             value = sss
         elif var[0] == "BOOL":
-            if(sss == "TRUE"): 
+            if sss == "TRUE":
                 value = True
-            elif(sss == "FALSE"):
+            elif sss == "FALSE":
                 value = False
             else:
                 raise Exception("Invalid datatype.")
@@ -218,69 +220,85 @@ class Interpreter(NodeVisitor):
 
         self.VARIABLES[assign_node.left.value][1] = right_value
 
+    def visit_UnaryOp(self, unary_node: ast.UnaryOp):
+        operator = unary_node.token.type
+        expression = self.visit(unary_node.expr)
+        result = None
+
+        if expression == "TRUE" or expression == "FALSE":
+            expression = expression == "TRUE"
+        else:
+            self.check_instance(expression, operator, str)
+
+        if operator == TokenType.MINUS:
+            result = -1 * expression
+        elif operator == TokenType.PLUS:
+            result = expression
+        elif operator == TokenType.NOT:
+            if not isinstance(expression, bool):
+                self.check_instance(expression, operator, float)
+                self.check_instance(expression, operator, int)
+
+            result = not expression
+        else:
+            self.raise_error(
+                "Unary Error: could not assign " + operator + "on variable."
+            )
+
+        return result
+
+    def check_instance(self, expression, operator, datatype):
+        # for unary checking
+        if isinstance(expression, datatype):
+            self.raise_error(
+                "Unary Error: could not assign '"
+                + str(operator)
+                + "' on variable type "
+                + str(datatype)
+            )
+
     def visit_Input(self, input_node: ast.Input):
         variables = input_node.token.value
         temp = input()
         sss = []
         val = ""
         i = 0
-        while(i < len(temp)):
-            if(temp[i] == " "): continue
-            elif(temp[i] == ","):
-                if(len(variables) > len(sss)):
+        isspace = False
+
+        while i < len(temp):
+            if temp[i] == " ":
+                if len(val) > 0:
+                    isspace = True
+            elif temp[i] == ",":
+                if len(variables) > len(sss):
                     sss.append(val)
-                    val=""
-                else: raise Exception("Too many inputs.")
+                    isspace = False
+                    val = ""
+                else:
+                    raise Exception("Too many inputs.")
             else:
+                if isspace:
+                    raise Exception("input syntax error.")
                 val += temp[i]
-            i+=1
-        if(len(variables) > len(sss)):
+            i += 1
+        if len(variables) > len(sss):
             sss.append(val)
         else:
             raise Exception("Too many inputs.")
-        i=0
+        i = 0
 
-        for var,s in zip(variables, sss):
-            self.input_values(var,s)
-    
-    def visit_StringExpression(self,string_node: ast.StringExpression):
+        for var, s in zip(variables, sss):
+            self.input_values(var, s)
+
+    def visit_StringExpression(self, string_node: ast.StringExpression):
         return string_node.value
-    
-    def visit_Output(self,output_node: ast.Output):
-        output = ''
+
+    def visit_Output(self, output_node: ast.Output):
+        output = ""
         for node in output_node.children:
             output += str(self.visit(node))
         print(output)
-    
-    def visit_IfStatement(self, if_statement: ast.IfStatement):
-        val_expr = self.visit(if_statement.expr)
-        if val_expr and val_expr != 'FALSE':
-            values = [if_statement.value]
-            if type(if_statement.value).__name__ == 'list':
-                values = []
-                for val in if_statement.value:
-                    values.append(val)
-            for val in values:
-                self.visit(val)
-        elif if_statement.els is not None:
-            self.visit(if_statement.els)
-        return if_statement.value
 
-    def visit_WhileStatement(self, WhileStatement: ast.WhileStatement):
-        while True:
-            val_expr = self.visit(WhileStatement.expr)
-            if not val_expr or val_expr == 'FALSE':
-                break
-            values = [WhileStatement.value]
-            if type(WhileStatement.value).__name__ == 'list':
-                values = []
-                for val in WhileStatement.value:
-                    values.append(val)
-            for val in values:
-                self.visit(val)
-                
-        return WhileStatement.value
-    
     def visit_Program(self, program_node: ast.Program):
         self.visit(program_node.block)
 
@@ -292,6 +310,37 @@ class Interpreter(NodeVisitor):
     def visit_AssignCollection(self, assign_collection_node: ast.AssignCollection):
         for node in reversed(assign_collection_node.assign_nodes):
             self.visit(node)
+
+    def visit_executable_block(self, exec_node: ast.Compound):
+        nodes = exec_node.children
+        for node in nodes:
+            if isinstance(node, ast.Input):
+                variables = node.token.value
+                for var in variables:
+                    self.input_values(var)
+
+    def visit_While(self, while_node: ast.While):
+        condition = self.visit(while_node.condition_node)
+        if type(condition) != bool:
+            self.raise_error("Invalid condition for while statement")
+        else:
+            while self.visit(while_node.condition_node):
+                self.visit(while_node.compound_statement_node)
+
+    def visit_If(self, if_node: ast.If):
+        condition = self.visit(if_node.condition_node)
+        if type(condition) != bool:
+            self.raise_error("Invalid condition for if statement")
+        else:
+            if condition:
+                self.visit(if_node.compound_statement_node)
+        return condition
+
+    def visit_Cascading_If(self, cascading_if_node: ast.Cascading_If):
+        for if_node in cascading_if_node.if_nodes:
+            if_executed = self.visit(if_node)
+            if if_executed:
+                break
 
     def interpret(self):
         program = self.parser.parse_execute()
