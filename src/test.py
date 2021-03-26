@@ -14,13 +14,12 @@ def main():
         text = ""
         with open(f"src/sample-source-codes/{file_name}", "r") as file:
             for line in file.readlines():
-                text += line + "\\n"
+                text += line.lstrip() + "\\n"
 
         lexer = Lexer(text)
         parser = Parser(lexer)
         interpreter = Interpreter(parser)
         interpreter.interpret()
-        print(interpreter.VARIABLES)
 
 
 main()

@@ -8,5 +8,5 @@ START
         fact = fact * i
         i = i + 1
     STOP
-    OUTPUT:"Factorial of " & n & "is: " & fact
+    OUTPUT:"Factorial of " & n & " is: " & fact
 STOP
