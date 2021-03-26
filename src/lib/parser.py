@@ -9,17 +9,24 @@ class Parser(object):
         self.current_token = self.lexer.get_next_token()
         self.previous_token: Token = None
 
-    def raise_error(self, suppposed_type, received_type):
+    def raise_error(self, suppposed_type, received_type, additional_string=""):
         raise Exception(
-            f"Error in Parsing received {received_type} instead of {suppposed_type} current token is {self.current_token}"
+            f"Parse Error {received_type} instead of {suppposed_type} current token is {self.current_token} {additional_string}"
         )
 
-    def eat(self, token_type):
-        if self.current_token.type == token_type:
+    def eat(self, token_type: TokenType, error_string=""):
+        if self.current_token is not None and self.current_token.type == token_type:
             self.previous_token = self.current_token
             self.current_token = self.lexer.get_next_token()
         else:
-            self.raise_error(token_type, self.current_token.type)
+            if self.current_token is not None:
+                self.raise_error(
+                    token_type.name,
+                    self.current_token.type.name + " ",
+                    additional_string=error_string,
+                )
+            else:
+                raise Exception("Parse error: " + error_string)
 
     def variable_declaration(self):
         """Variable: 'VAR' variable_list AS data_type
@@ -27,9 +34,9 @@ class Parser(object):
         # testing if format follows the grammar
         # VD-> 'VAR' variable_list AS data_type | e
         nodes = []
-        self.eat(TokenType.VAR)
+        self.eat(TokenType.VAR, error_string="Are you missing a 'VAR' keyword?")
         var_list = self.variable_list()
-        self.eat(TokenType.AS)
+        self.eat(TokenType.AS, error_string="Are you missing an 'AS' keyword?")
         data_type = self.data_type()
 
         # attach type node to all variables in variable_list
@@ -58,10 +65,12 @@ class Parser(object):
         elif self.current_token.type == TokenType.EQUAL:
             prev_tok = self.previous_token
             self.eat(TokenType.EQUAL)
-            node = ast.Assign(left=ast.Variable(prev_tok), right=self.expression())
-
+            if prev_tok.type == TokenType.IDENT:
+                node = ast.Assign(left=ast.Variable(prev_tok), right=self.expression())
+            else:
+                raise(Exception("Parse Error: Incorrect variable expression"))
         else:
-            self.raise_error("Identifier or Equal", "Invalid Token")
+            raise (Exception("Parse Error: Incorrect variable expression"))
 
         return node
 
@@ -73,7 +82,6 @@ class Parser(object):
         # char -> 'character'|''
         # boolean -> "TRUE"|"FALSE"
         # num_list -> num num_list | e
-
         constant_token = self.current_token
         if constant_token.type == TokenType.INT:  # check if all characters are digits
             for c in constant_token.value:
@@ -113,23 +121,27 @@ class Parser(object):
         return ast.Constant(constant_token)
 
     def data_type(self) -> TokenType:
+        if self.current_token is None:
+            raise (Exception("Parse Error: Are you missing a Data Type?"))
         token = self.current_token
 
         if token.type == TokenType.KW_INT:
             self.eat(TokenType.KW_INT)
             return TokenType.INT
 
-        if token.type == TokenType.KW_CHAR:
+        elif token.type == TokenType.KW_CHAR:
             self.eat(TokenType.KW_CHAR)
             return TokenType.CHAR
 
-        if token.type == TokenType.KW_FLOAT:
+        elif token.type == TokenType.KW_FLOAT:
             self.eat(TokenType.KW_FLOAT)
             return TokenType.FLOAT
 
-        if token.type == TokenType.KW_BOOL:
+        elif token.type == TokenType.KW_BOOL:
             self.eat(TokenType.KW_BOOL)
             return TokenType.BOOL
+        else:
+            raise (Exception("Parse Error: Are you missing a Data Type?"))
 
         node = ast.DataType(token)
         return node
@@ -154,9 +166,9 @@ class Parser(object):
 
     def compound_statement(self):
         """ compound_statement: START statement_list STOP """
-        self.eat(TokenType.START)
+        self.eat(TokenType.START, error_string="Are you missing a 'START' keyword")
         nodes = self.statement_list()
-        self.eat(TokenType.STOP)
+        self.eat(TokenType.STOP, error_string="Are you missing a 'STOP' keyword")
 
         root = ast.Compound()
         for node in nodes:
@@ -171,7 +183,9 @@ class Parser(object):
         node = self.statement()
 
         results = [node]
-        while self.current_token.type != TokenType.STOP:
+        while (
+            self.current_token is not None and self.current_token.type != TokenType.STOP
+        ):
 
             if self.current_token.type is None:
                 break
@@ -219,21 +233,28 @@ class Parser(object):
         # if_statement->if(expression)compound_statement (elseif_statement)* [else_statement]
         if_nodes = []
         self.eat(TokenType.IF)
-        self.eat(TokenType.LPAREN)
+        self.eat(TokenType.LPAREN, error_string="Are you missing a left parenthesis? ")
         condition_node = self.expression()
-        self.eat(TokenType.RPAREN)
+        self.eat(TokenType.RPAREN, error_string="Are you missing a right parenthesis? ")
         compound_statement_node = self.compound_statement()
         if_nodes.append(ast.If(condition_node, compound_statement_node))
 
-        while self.current_token.type == TokenType.ELSEIF:
+        while (
+            self.current_token is not None
+            and self.current_token.type == TokenType.ELSEIF
+        ):
             self.eat(TokenType.ELSEIF)
-            self.eat(TokenType.LPAREN)
+            self.eat(
+                TokenType.LPAREN, error_string="Are you missing a left parenthesis? "
+            )
             condition_node = self.expression()
-            self.eat(TokenType.RPAREN)
+            self.eat(
+                TokenType.RPAREN, error_string="Are you missing a right parenthesis? "
+            )
             compound_statement_node = self.compound_statement()
             if_nodes.append(ast.If(condition_node, compound_statement_node))
 
-        if self.current_token.type == TokenType.ELSE:
+        if self.current_token is not None and self.current_token.type == TokenType.ELSE:
             self.eat(TokenType.ELSE)
             condition_node = ast.Constant(Token(TokenType.BOOL, "TRUE"))
             compound_statement_node = self.compound_statement()
@@ -243,9 +264,9 @@ class Parser(object):
 
     def while_statement(self):
         self.eat(TokenType.WHILE)
-        self.eat(TokenType.LPAREN)
+        self.eat(TokenType.LPAREN, error_string="Are you missing a left parenthesis? ")
         condition_node = self.expression()
-        self.eat(TokenType.RPAREN)
+        self.eat(TokenType.RPAREN, error_string="Are you missing a right parenthesis? ")
         compound_statement_node = self.compound_statement()
         return ast.While(condition_node, compound_statement_node)
 
@@ -253,37 +274,45 @@ class Parser(object):
         """input_statement: INPUT: (variable)*"""
         node = ast.Variable(self.current_token)
         var_nodes = [node]  # first ID
-        self.eat(TokenType.IDENT)
-        while self.current_token.type == TokenType.COMMA:
+        self.eat(TokenType.IDENT, error_string="Are you missing an identifier? ")
+        while (
+            self.current_token is not None
+            and self.current_token.type == TokenType.COMMA
+        ):
             self.eat(TokenType.COMMA)
             node = ast.Variable(self.current_token)
             var_nodes.append(node)
-            self.eat(TokenType.IDENT)
-            if (
-                self.current_token.type == TokenType.STOP
-                or self.current_token.type is None
-            ):
+            self.eat(TokenType.IDENT, error_string="Are you missing an identifier? ")
+            if self.current_token.type == TokenType.STOP or self.current_token is None:
                 break
         return var_nodes
 
     def output_statement(self):
         children = []
-        if self.current_token.type == TokenType.KW_STRING:
+        if (
+            self.current_token is not None
+            and self.current_token.type == TokenType.KW_STRING
+        ):
             node = ast.StringExpression(self.current_token)
             self.eat(self.current_token.type)
             children.append(node)
         else:
-            node = self.expression()
-            children.append(node)
-        while self.current_token.type == TokenType.AMPERSAND:
+            if self.current_token is not None:
+                node = self.expression()
+                children.append(node)
+        while (
+            self.current_token is not None
+            and self.current_token.type == TokenType.AMPERSAND
+        ):
             self.eat(TokenType.AMPERSAND)
             if self.current_token.type == TokenType.KW_STRING:
                 node = ast.StringExpression(self.current_token)
                 self.eat(self.current_token.type)
                 children.append(node)
             else:
-                node = self.expression()
-                children.append(node)
+                if self.current_token is not None:
+                    node = self.expression()
+                    children.append(node)
         return ast.Output(children)
 
     def variable(self):
@@ -296,12 +325,15 @@ class Parser(object):
         assignment_phrases-> = variable assignment_phrases | = variable | = expression
         """
         left = self.variable()
-        self.eat(TokenType.EQUAL)
+        self.eat(TokenType.EQUAL, error_string="Are you missing an equal sign? ")
         right = self.expression()
         node = ast.Assign(left, right)
         nodes = [node]
 
-        while self.current_token.type == TokenType.EQUAL:
+        while (
+            self.current_token is not None
+            and self.current_token.type == TokenType.EQUAL
+        ):
             self.eat(TokenType.EQUAL)
             if not isinstance(right, ast.Variable):
                 self.raise_error("Variable", type(right).__name__)
@@ -314,33 +346,13 @@ class Parser(object):
     def empty(self):
         return ast.NoOperation()
 
-    def if_statement(self):
-        """
-        output_statement : expr (& expr)*
-        """
-        terms = []
-        current_pos = self.lexer.pos
-        while True:
-            if self.current_token.type == TokenType.KW_STRING:
-                term = self.expression()
-                terms.append(ast.StringExpression(self.current_token, term))
-
-            if self.current_token.type == TokenType.IDENT:
-                terms.append(self.variable())
-            if (
-                self.lexer.pos < current_pos
-                or self.current_token.type != TokenType.AMPERSAND
-            ):
-                break
-            if self.current_token.type == TokenType.AMPERSAND:
-                self.eat(TokenType.AMPERSAND)
-        return terms
-
     def expression(self):
         # expression -> or_part (OR or_part)*
 
         node = self.or_part()
-        while self.current_token.type == TokenType.OR:
+        while (
+            self.current_token is not None and self.current_token.type == TokenType.OR
+        ):
             token = self.current_token
             self.eat(TokenType.OR)
             node = ast.BinOp(left=node, op=token, right=self.or_part())
@@ -350,7 +362,9 @@ class Parser(object):
     def or_part(self):
         # or_part -> and_part (AND and_part)*
         node = self.and_part()
-        while self.current_token.type == TokenType.AND:
+        while (
+            self.current_token is not None and self.current_token.type == TokenType.AND
+        ):
             token = self.current_token
             self.eat(TokenType.AND)
             node = ast.BinOp(left=node, op=token, right=self.and_part())
@@ -359,7 +373,10 @@ class Parser(object):
     def and_part(self):
         # and_part -> rel_low_prec_part ((==|<>) rel_low_prec_part)*
         node = self.rel_low_prec_part()
-        while self.current_token.type in (TokenType.EQUAL_EQUAL, TokenType.NOT_EQUAL):
+        while self.current_token is not None and self.current_token.type in (
+            TokenType.EQUAL_EQUAL,
+            TokenType.NOT_EQUAL,
+        ):
             token = self.current_token
             self.eat(token.type)
             node = ast.BinOp(left=node, op=token, right=self.rel_low_prec_part())
@@ -368,7 +385,7 @@ class Parser(object):
     def rel_low_prec_part(self):
         # rel_low_prec_part -> rel_high_prec_part ((<|>|<=|>=) rel_high_prec_part)*
         node = self.rel_high_prec_part()
-        while self.current_token.type in (
+        while self.current_token is not None and self.current_token.type in (
             TokenType.LESS_THAN,
             TokenType.GREATER_THAN,
             TokenType.LESS_THAN_EQUAL,
@@ -382,7 +399,10 @@ class Parser(object):
     def rel_high_prec_part(self):
         # rel_high_prec_part -> add_part ((+|-) add_part)*
         node = self.add_part()
-        while self.current_token.type in (TokenType.PLUS, TokenType.MINUS):
+        while self.current_token is not None and self.current_token.type in (
+            TokenType.PLUS,
+            TokenType.MINUS,
+        ):
             token = self.current_token
             self.eat(token.type)
             node = ast.BinOp(left=node, op=token, right=self.add_part())
@@ -391,7 +411,7 @@ class Parser(object):
     def add_part(self):
         # add_part -> factor ((*|/|%) factor)*
         node = self.factor()
-        while self.current_token.type in (
+        while self.current_token is not None and self.current_token.type in (
             TokenType.MUL,
             TokenType.DIV,
             TokenType.MODULO,
@@ -410,6 +430,8 @@ class Parser(object):
                | LPAREN expr RPAREN
                | variable
         """
+        if self.current_token is None:
+            raise (Exception("Parse Error: Are you missing a factor? "))
         token = self.current_token
         if token.type == TokenType.PLUS:
             self.eat(TokenType.PLUS)
@@ -434,10 +456,12 @@ class Parser(object):
         elif token.type == TokenType.LPAREN:
             self.eat(TokenType.LPAREN)
             node = self.expression()
-            self.eat(TokenType.RPAREN)
+            self.eat(TokenType.RPAREN,error_string="Are you missing a right parenthesis? ")
             return node
-        else:
+        elif self.current_token.type == TokenType.IDENT:
             return self.variable()
+        else:
+            raise (Exception("Parse Error: Are you missing an operand? "))
 
     def parse_execute(self):
         """

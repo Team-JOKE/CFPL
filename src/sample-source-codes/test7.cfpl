@@ -1,4 +1,4 @@
-VAR xyz,d, abc_1=100 * 12, c, x, y AS INT
+VAR xyz,d, abc_1= 100 * 12, c, x, y AS INT
 VAR s AS BOOL
 *   h w eh  aw g e j aw gejhgawhj
 START
