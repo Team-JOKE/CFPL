@@ -1,4 +1,5 @@
 VAR baz AS BOOL
 START
     INPUT: baz
+    OUTPUT: baz
 STOP

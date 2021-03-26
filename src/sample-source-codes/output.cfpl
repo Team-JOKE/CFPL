@@ -10,6 +10,6 @@ START
     OUTPUT: baz
     OUTPUT: 1 + 12
     OUTPUT: foo & 1 & "#FALSE"
-    OUTPUT: "[[]" & "[]]"
+    OUTPUT: "[[]" & "[]]" & "["]"
     OUTPUT: "Hello World!"
 STOP
