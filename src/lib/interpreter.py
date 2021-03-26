@@ -39,6 +39,8 @@ class Interpreter(NodeVisitor):
     def input_values(self, variable: ast.Variable, sss):
         # input variables from user executable
         name = variable.value
+        if self.VARIABLES.get(name) is None:
+            self.raise_error("Undeclared Variable: " + name)
         var = self.VARIABLES[name]
         if var[0] == "INT":
             value = int(sss)
