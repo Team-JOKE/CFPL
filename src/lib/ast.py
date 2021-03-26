@@ -65,9 +65,6 @@ class AssignCollection(AST):
         self.assign_nodes = assign_nodes
 
 
-# ####### UNKNOWN ####### #
-
-
 class Block(AST):
     def __init__(self, declarations, compound_statement):
         self.declarations = declarations
@@ -94,6 +91,18 @@ class Num(AST):
         self.value = token.value
 
 
+class Char(Num):
+    pass
+
+
+class Bool(Num):
+    pass
+
+
+class String(Num):
+    pass
+
+
 class Program(AST):
     def __init__(self, block):
         self.block = block
@@ -103,8 +112,15 @@ class NoOperation(AST):
     pass
 
 
-class Output(Num):
-    pass
+class Output(AST):
+    def __init__(self, children):
+        self.children = children
+
+
+class StringExpression(AST):
+    def __init__(self, token):
+        self.token = token
+        self.value = token.value
 
 
 class Input(Num):
