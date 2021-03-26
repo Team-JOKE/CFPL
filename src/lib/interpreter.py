@@ -292,10 +292,11 @@ class Interpreter(NodeVisitor):
         output = ""
         for node in output_node.children:
             temp = self.visit(node)
-            if temp == True:
-                output += "TRUE"
-            elif temp == False:
-                output += "FALSE"
+            if type(temp) == bool:
+                if temp == True:
+                    output += "TRUE"
+                elif temp == False:
+                    output += "FALSE"
             else:
                 output += str(temp)
         print(output)
