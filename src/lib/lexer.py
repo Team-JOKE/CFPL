@@ -43,7 +43,9 @@ class Lexer(object):
     def get_full_identifier(self) -> Token:
 
         id = ""
-        while self.current_char is not None and self.current_char.isalnum():
+        while self.current_char is not None and (
+            self.current_char.isalnum() or self.current_char == "_"
+        ):
             id += self.current_char
             self.advance()
 
@@ -143,12 +145,9 @@ class Lexer(object):
             boolean += self.current_char
             self.advance()
 
-        # advance for ending quotation mark
         self.advance()
 
-        return Token(
-            TokenType.BOOL, boolean
-        )  # please ko check ani ervin y dili ni bool
+        return Token(TokenType.BOOL, boolean)
 
     def skip_whitespace(self):
         while self.current_char is not None and self.current_char.isspace():
@@ -161,7 +160,7 @@ class Lexer(object):
         return self.text[i]
 
     def get_comment(self):
-        while self.current_char is not None and self.current_char != "\\":
+        while self.current_char is not None and self.current_char != "\n":
             self.advance()
 
     def get_full_relational(self):
@@ -198,7 +197,7 @@ class Lexer(object):
                 continue
             elif self.current_char.isdigit() or self.current_char == ".":
                 return self.get_full_number()
-            elif self.current_char.isalpha():
+            elif self.current_char.isalpha() or self.current_char == "_":
                 return self.get_full_identifier()
             elif self.current_char == "\\":
                 self.advance()
