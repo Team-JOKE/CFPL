@@ -109,12 +109,11 @@ class Lexer(object):
                 self.advance()
                 continue
             if self.look_back() == "[" and self.peek() == "]":  # middle
-                if self.current_char in ["#", "[", "]"]:
+                if self.current_char in ["#", "[", "]", '"']:
                     result += self.current_char
                     self.advance()
                 else:
                     raise Exception("Invalid syntax : " + self.current_char)
-                    break
                 continue
             if self.current_char == "]" and self.look_back(2) == "[":  # last
                 self.advance()
@@ -124,10 +123,8 @@ class Lexer(object):
                 break
             if self.current_char == "[":
                 raise Exception("Invalid syntax")
-                break
             if self.current_char == "]":
                 raise Exception("Invalid syntax")
-                break
             result += self.current_char if self.current_char != "#" else "\n"
             self.advance()
         if result in ["TRUE", "FALSE"]:
