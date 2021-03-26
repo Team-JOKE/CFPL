@@ -1,13 +1,18 @@
+import os
+from pathlib import Path
+
 from lib.interpreter import Interpreter
 from lib.lexer import Lexer
 from lib.parser import Parser
 
+BASE_DIR = Path(__file__).resolve().parent.parent
+
 
 def main():
-    files = ["1", "input", "output", "simple-while", "test2", "test3", "test4", "unary"]
+    files = os.listdir(f"{ BASE_DIR }/src/sample-source-codes")
     for file_name in files:
         text = ""
-        with open(f"src/sample-source-codes/{file_name}.cfpl", "r") as file:
+        with open(f"src/sample-source-codes/{file_name}", "r") as file:
             for line in file.readlines():
                 text += line + "\\n"
 
