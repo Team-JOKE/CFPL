@@ -1,0 +1,4 @@
+VAR a=10, b=20, c=300 AS INT
+START
+OUTPUT: (((a*5)/10 + 10) * -1)*5
+STOP

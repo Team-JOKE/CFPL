@@ -102,7 +102,6 @@ class Parser(object):
             if constant_token.value[len(constant_token.value) - 1] != "'":
                 self.raise_error(TokenType.CHAR, "Invalid Token")
         # elif constant_token.type == TokenType.KW_STRING:
-        #     print("sa string siya ni sud")
         #     string_value = constant_token.value.replace('"', "")
         else:
             bool_value = constant_token.value.replace('"', "")
@@ -295,8 +294,6 @@ class Parser(object):
         """assignment_statement_list -> variable assignment_phrases
         assignment_phrases-> = variable assignment_phrases | = variable | = expression
         """
-        print(self.current_token)
-        print("assignment statement here")
         left = self.variable()
         self.eat(TokenType.EQUAL)
         right = self.expression()
@@ -305,8 +302,6 @@ class Parser(object):
 
         while self.current_token.type == TokenType.EQUAL:
             self.eat(TokenType.EQUAL)
-            print(self.current_token)
-            print("loop here")
             if not isinstance(right, ast.Variable):
                 self.raise_error("Variable", type(right).__name__)
             left = right
@@ -401,8 +396,6 @@ class Parser(object):
             TokenType.DIV,
             TokenType.MODULO,
         ):
-            print("add part here")
-            print(self.current_token)
             token = self.current_token
             self.eat(token.type)
             node = ast.BinOp(left=node, op=token, right=self.factor())
@@ -444,8 +437,6 @@ class Parser(object):
             self.eat(TokenType.RPAREN)
             return node
         else:
-            print(self.current_token)
-            print("self.variable here")
             return self.variable()
 
     def parse_execute(self):
