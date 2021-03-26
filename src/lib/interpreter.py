@@ -332,7 +332,10 @@ class Interpreter(NodeVisitor):
             if_executed = self.visit(if_node)
             if if_executed:
                 break
-
+    
+    def visit_NoOperation(self, noop_node:ast.NoOperation):
+        pass
+    
     def interpret(self):
         program = self.parser.parse_execute()
         self.visit(program)
