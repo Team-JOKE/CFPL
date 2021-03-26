@@ -15,10 +15,6 @@ class TokenType(Enum):
     KW_BOOL = 9
     KW_FLOAT = 10
     KW_STRING = 11
-    WHILE = 38
-    IF = 39
-    ELSEIF = 40
-    ELSE = 41
 
     # data types
     INT = 12
@@ -55,6 +51,12 @@ class TokenType(Enum):
     RPAREN = 35
     AMPERSAND = 36
     IDENT = 37
+
+    # control structures
+    WHILE = 38
+    IF = 39
+    ELSEIF = 40
+    ELSE = 41
 
 
 class Token(object):
