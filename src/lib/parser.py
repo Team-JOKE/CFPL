@@ -61,7 +61,10 @@ class Parser(object):
         elif self.current_token.type == TokenType.EQUAL:
             prev_tok = self.previous_token
             self.eat(TokenType.EQUAL)
-            node = ast.Assign(left=ast.Variable(prev_tok), right=self.expression())
+            if prev_tok.type == TokenType.IDENT:
+                node = ast.Assign(left=ast.Variable(prev_tok), right=self.expression())
+            else:
+                raise(Exception("Parse Error: Incorrect variable expression"))
         else:
             raise(Exception("Parse Error: Incorrect variable expression"))
 
