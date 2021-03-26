@@ -111,7 +111,7 @@ class Lexer(object):
         return self.text[i]
 
     def get_comment(self):
-        while self.current_char is not None and self.current_char != "\\":
+        while self.current_char is not None and self.current_char != "\n":
             self.advance()
 
     def get_full_relational(self):

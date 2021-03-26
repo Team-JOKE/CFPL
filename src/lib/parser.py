@@ -311,7 +311,6 @@ class Parser(object):
         return ast.AssignCollection(nodes)
 
     def empty(self):
-        """An empty production"""
         return ast.NoOperation()
 
     def expression(self):
