@@ -207,17 +207,17 @@ class Interpreter(NodeVisitor):
         var_type = self.VARIABLES[assign_node.left.value][0]
         right_value_type = self.get_type_name(type(right_value))
         if var_type != right_value_type:
-            self.raise_error(
-                "Assignment Error: could not assign type "
-                + right_value_type
-                + " on variable of type "
-                + var_type
-                + "\n"
-                + str(assign_node.left.value)
-                + " = "
-                + str(right_value)
-            )
-
+            if not(var_type == "FLOAT" and right_value_type=="INT"):
+                self.raise_error(
+                    "Assignment Error: could not assign type "
+                    + right_value_type
+                    + " on variable of type "
+                    + var_type
+                    + "\n"
+                    + str(assign_node.left.value)
+                    + " = "
+                    + str(right_value)
+                )
         self.VARIABLES[assign_node.left.value][1] = right_value
 
     def visit_UnaryOp(self, unary_node: ast.UnaryOp):
