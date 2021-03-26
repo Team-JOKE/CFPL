@@ -1,249 +1,343 @@
-from lib.ast import Compound, Input, Variable, VariableDeclarationBlock
+from lib import ast
+from lib.nodeVisitor import NodeVisitor
 from lib.token import TokenType
 
 
-class Interpreter(object):
+class Interpreter(NodeVisitor):
     def __init__(self, parser):
         self.parser = parser
         self.VARIABLES = {}
 
-    def visit_variable_declaration_block(self, var_decl_node: VariableDeclarationBlock):
+    def visit_VariableDeclarationBlock(
+        self, var_decl_node: ast.VariableDeclarationBlock
+    ):
         for declaration in var_decl_node.declarations:
-            self.visit_variable(declaration)
+            self.visit(declaration)
+            if isinstance(declaration, ast.VariableDeclaration):
+                self.VARIABLES[declaration.value][0] = TokenType(
+                    var_decl_node.type_node.value
+                ).name
+                # default values for each data type
+                DEFAULT_VALUES = {
+                    TokenType.BOOL: "FALSE",
+                    TokenType.INT: 0,
+                    TokenType.CHAR: "",
+                    TokenType.FLOAT: 0.0,
+                }
+                if self.VARIABLES[declaration.value][1] is None:
+                    self.VARIABLES[declaration.value][1] = DEFAULT_VALUES.get(
+                        var_decl_node.type_node.value
+                    )
 
-    def visit_variable(self, variable: Variable):
-        # add to symbol table
-        name = variable.token.value
-        var_type = variable.type_node
-        value = None
+    def raise_error(self, exception_text: str):
+        raise Exception(exception_text)
 
-        if variable.value_node is not None:
-            value = variable.value_node.value
-        else:
-            # default values for each data type
-            DEFAULT_VALUES = {
-                TokenType.BOOL: "FALSE",
-                TokenType.INT: 0,
-                TokenType.CHAR: "",
-                TokenType.FLOAT: 0.0,
-            }
-
-            value = DEFAULT_VALUES.get(var_type)
-
-        self.VARIABLES[name] = (var_type.name, value)
-
-    def input_values(self, variable: Variable):
+    def input_values(self, variable: ast.Variable, sss):
         # input variables from user executable
-        name = variable.token.value
-        var_type = variable.type_node
+        name = variable.value
         var = self.VARIABLES[name]
         if var[0] == "INT":
-            value = int(input())
+            value = int(sss)
         elif var[0] == "FLOAT":
-            value = float(input())
+            value = float(sss)
         elif var[0] == "CHAR":
-            value = input()
+            value = sss[0]
+        elif var[0] == "STRING":
+            value = sss
         elif var[0] == "BOOL":
-            value = bool(input())
+            if sss == "TRUE":
+                value = True
+            elif sss == "FALSE":
+                value = False
+            else:
+                raise Exception("Invalid datatype.")
         else:
-            raise Exception(
-                f"Invalid input. Received {variable.type} instead of {var_type}"
-            )
+            raise Exception("Invalid datatype.")
 
-        self.VARIABLES[name] = (var[0], value)
+        self.VARIABLES[name] = [var[0], value]
 
-    def visit_executable_block(self, exec_node: Compound):
+    def visit_Compound(self, exec_node: ast.Compound):
         nodes = exec_node.children
         for node in nodes:
-            if isinstance(node, Input):
+            self.visit(node)
+
+    def visit_Variable(self, var_node: ast.Variable):
+        if self.VARIABLES.get(var_node.value) is not None:
+            return self.VARIABLES[var_node.value][1]
+        else:
+            self.raise_error("Undeclared Variable: " + var_node.value)
+
+    def visit_VariableDeclaration(self, var_dec_node: ast.VariableDeclaration):
+        if self.VARIABLES.get(var_dec_node.value) is not None:
+            self.raise_error("Duplicate Declaration of Variable: " + var_dec_node.value)
+        else:
+            self.VARIABLES[var_dec_node.value] = [None, None]
+
+    def visit_Constant(self, constant_node: ast.Constant):
+        if constant_node.type == TokenType.INT:
+            return int(constant_node.value)
+        elif constant_node.type == TokenType.FLOAT:
+            return float(constant_node.value)
+        elif constant_node.type == TokenType.CHAR:
+            if len(constant_node.value) == 2:
+                return ""
+            else:
+                return constant_node.value[1]
+        else:
+            if constant_node.value == "TRUE":
+                return True
+            else:
+                return False
+
+    def get_type_name(self, type_object: type):
+        type_object_name = type_object.__name__
+        if type_object_name == "str":
+            return "CHAR"
+        elif type_object_name == "int":
+            return "INT"
+        elif type_object_name == "bool":
+            return "BOOL"
+        elif type_object_name == "float":
+            return "FLOAT"
+
+    def visit_BinOp(self, bin_op_node: ast.BinOp):
+        left = self.visit(bin_op_node.left)
+        right = self.visit(bin_op_node.right)
+
+        left_type: type = type(left)
+        right_type: type = type(right)
+
+        left_type_name = self.get_type_name(left_type)
+        right_type_name = self.get_type_name(right_type)
+
+        # if types are so different for an operation
+        if left_type != right_type:
+            if not (
+                left_type == int
+                and right_type == float
+                or left_type == float
+                and right_type == int
+            ):
+                self.raise_error(
+                    "Could not perform operation "
+                    + bin_op_node.op.value
+                    + " on "
+                    + left_type_name
+                    + " and "
+                    + right_type_name
+                    + "\n"
+                    + str(left)
+                    + " "
+                    + bin_op_node.op.value
+                    + " "
+                    + str(right)
+                )
+
+        if bin_op_node.op.type == TokenType.PLUS:
+            return left + right
+        elif bin_op_node.op.type == TokenType.MINUS:
+            return left - right
+        elif bin_op_node.op.type == TokenType.MUL:
+            return left * right
+        elif bin_op_node.op.type == TokenType.DIV:
+            if left_type == int and right_type == int:
+                return left // right
+            elif left_type == float or right_type == float:
+                return left / right
+        elif bin_op_node.op.type == TokenType.MODULO:
+            return left % right
+        elif bin_op_node.op.type == TokenType.LESS_THAN:
+            return left < right
+        elif bin_op_node.op.type == TokenType.LESS_THAN_EQUAL:
+            return left <= right
+        elif bin_op_node.op.type == TokenType.GREATER_THAN:
+            return left > right
+        elif bin_op_node.op.type == TokenType.GREATER_THAN_EQUAL:
+            return left >= right
+        elif bin_op_node.op.type == TokenType.EQUAL_EQUAL:
+            return left == right
+        elif bin_op_node.op.type == TokenType.NOT_EQUAL:
+            return left != right
+        elif bin_op_node.op.type == TokenType.AND:
+            if left_type != bool or right_type != bool:
+                self.raise_error(
+                    "Could not perform operation "
+                    + bin_op_node.op.value
+                    + " on "
+                    + left_type_name
+                    + " and "
+                    + right_type_name
+                    + "\n"
+                    + str(left)
+                    + " "
+                    + bin_op_node.op.value
+                    + " "
+                    + str(right)
+                )
+            return left and right
+        elif bin_op_node.op.type == TokenType.OR:
+            if left_type != bool or right_type != bool:
+                self.raise_error(
+                    "Could not perform operation "
+                    + bin_op_node.op.value
+                    + " on "
+                    + left_type_name
+                    + " and "
+                    + right_type_name
+                    + "\n"
+                    + str(left)
+                    + " "
+                    + bin_op_node.op.value
+                    + " "
+                    + str(right)
+                )
+            return left or right
+
+    def visit_Assign(self, assign_node: ast.Assign):
+        if self.VARIABLES.get(assign_node.left.value) is None:
+            self.raise_error("Undeclared Variable: " + assign_node.left.value)
+        right_value = self.visit(assign_node.right)
+        var_type = self.VARIABLES[assign_node.left.value][0]
+        right_value_type = self.get_type_name(type(right_value))
+        if var_type != right_value_type:
+            self.raise_error(
+                "Assignment Error: could not assign type "
+                + right_value_type
+                + " on variable of type "
+                + var_type
+                + "\n"
+                + str(assign_node.left.value)
+                + " = "
+                + str(right_value)
+            )
+
+        self.VARIABLES[assign_node.left.value][1] = right_value
+
+    def visit_UnaryOp(self, unary_node: ast.UnaryOp):
+        operator = unary_node.token.type
+        expression = self.visit(unary_node.expr)
+        result = None
+
+        if expression == "TRUE" or expression == "FALSE":
+            expression = expression == "TRUE"
+        else:
+            self.check_instance(expression, operator, str)
+
+        if operator == TokenType.MINUS:
+            result = -1 * expression
+        elif operator == TokenType.PLUS:
+            result = expression
+        elif operator == TokenType.NOT:
+            if not isinstance(expression, bool):
+                self.check_instance(expression, operator, float)
+                self.check_instance(expression, operator, int)
+
+            result = not expression
+        else:
+            self.raise_error(
+                "Unary Error: could not assign " + operator + "on variable."
+            )
+
+        return result
+
+    def check_instance(self, expression, operator, datatype):
+        # for unary checking
+        if isinstance(expression, datatype):
+            self.raise_error(
+                "Unary Error: could not assign '"
+                + str(operator)
+                + "' on variable type "
+                + str(datatype)
+            )
+
+    def visit_Input(self, input_node: ast.Input):
+        variables = input_node.token.value
+        temp = input()
+        sss = []
+        val = ""
+        i = 0
+        isspace = False
+
+        while i < len(temp):
+            if temp[i] == " ":
+                if len(val) > 0:
+                    isspace = True
+            elif temp[i] == ",":
+                if len(variables) > len(sss):
+                    sss.append(val)
+                    isspace = False
+                    val = ""
+                else:
+                    raise Exception("Too many inputs.")
+            else:
+                if isspace:
+                    raise Exception("input syntax error.")
+                val += temp[i]
+            i += 1
+        if len(variables) > len(sss):
+            sss.append(val)
+        else:
+            raise Exception("Too many inputs.")
+        i = 0
+
+        for var, s in zip(variables, sss):
+            self.input_values(var, s)
+
+    def visit_StringExpression(self, string_node: ast.StringExpression):
+        return string_node.value
+
+    def visit_Output(self, output_node: ast.Output):
+        output = ""
+        for node in output_node.children:
+            output += str(self.visit(node))
+        print(output)
+
+    def visit_Program(self, program_node: ast.Program):
+        self.visit(program_node.block)
+
+    def visit_Block(self, block_node: ast.Block):
+        for node in block_node.declarations:
+            self.visit(node)
+        self.visit(block_node.compound_statement)
+
+    def visit_AssignCollection(self, assign_collection_node: ast.AssignCollection):
+        for node in reversed(assign_collection_node.assign_nodes):
+            self.visit(node)
+
+    def visit_executable_block(self, exec_node: ast.Compound):
+        nodes = exec_node.children
+        for node in nodes:
+            if isinstance(node, ast.Input):
                 variables = node.token.value
                 for var in variables:
                     self.input_values(var)
 
+    def visit_While(self, while_node: ast.While):
+        condition = self.visit(while_node.condition_node)
+        if type(condition) != bool:
+            self.raise_error("Invalid condition for while statement")
+        else:
+            while self.visit(while_node.condition_node):
+                self.visit(while_node.compound_statement_node)
+
+    def visit_If(self, if_node: ast.If):
+        condition = self.visit(if_node.condition_node)
+        if type(condition) != bool:
+            self.raise_error("Invalid condition for if statement")
+        else:
+            if condition:
+                self.visit(if_node.compound_statement_node)
+        return condition
+
+    def visit_Cascading_If(self, cascading_if_node: ast.Cascading_If):
+        for if_node in cascading_if_node.if_nodes:
+            if_executed = self.visit(if_node)
+            if if_executed:
+                break
+
+    def visit_NoOperation(self, noop_node: ast.NoOperation):
+        pass
+
     def interpret(self):
-        variable_declaration = self.parser.parse_execute()
-        self.visit_variable_declaration_block(variable_declaration.block.declarations)
-
-
-# from lib.ast import Variable, VariableDeclarationBlock, Compound,Input,Output
-# from lib.token import TokenType
-
-# class Interpreter(NodeVisitor):
-#     def __init__(self, parser):
-#         self.parser = parser
-#         self.VARIABLES = {}
-
-#     def visit_Program(self, node):
-#         self.visit(node.block)
-
-#     def visit_Block(self, node):
-#         for declaration in node.declarations:
-#             self.visit(declaration)
-#         self.visit(node.compound_statement)
-
-
-#     def visit_variable_declaration_block(self, var_decl_node: VariableDeclarationBlock):
-#         for declaration in var_decl_node.declarations:
-#             self.visit_variable(declaration)
-
-#     def visit_variable(self, variable: Variable):
-#         # add to symbol table
-#         name = variable.token.value
-#         var_type = variable.type_node
-#         value = None
-
-#         if variable.value_node is not None:
-#             value = variable.value_node.value
-#         else:
-#             # default values for each data type
-#             DEFAULT_VALUES = {
-#                 TokenType.BOOL: "FALSE",
-#                 TokenType.INT: 0,
-#                 TokenType.CHAR: "",
-#                 TokenType.FLOAT: 0.0,
-#             }
-
-#             value = DEFAULT_VALUES.get(var_type)
-
-#         self.VARIABLES[name] = (var_type.name, value)
-#         self.assign_var_value(var_type.name, value)
-
-#     def assign_var_value(self, name, value):
-#         if name in self.VARIABLES:
-#             if self.VARIABLES[name] == "INT":
-#                 if not isinstance(value, int):
-#                     if isinstance(value, float):
-#                         value = int(value)
-#                     else:
-#                         try:
-#                             value = int(value)
-#                         except ValueError:
-#                             raise NameError('Value ' + repr(value) + ' could not assign to int variable ' + repr(name))
-#             elif self.VARIABLES[name] == "FLOAT":
-#                 if not isinstance(value, float):
-#                     if isinstance(value, int):
-#                         value = float(value)
-#                     else:
-#                         try:
-#                             value = float(value)
-#                         except ValueError:
-#                             raise NameError('Value ' + repr(value) + ' could not assign to float variable ' + repr(name))
-#             elif self.VARIABLES[name] == "CHAR":
-#                 if not isinstance(value, str):
-#                     raise NameError('Value ' + repr(value) + ' could not assign to char variable ' + repr(name))
-#             elif self.VARIABLES[name] == "BOOL":
-#                 if value not in ["TRUE", "FALSE"]:
-#                     if isinstance(value, bool):
-#                         value = "TRUE" if value else "FALSE"
-#                     else:
-#                         raise NameError('Value ' + repr(value) + ' could not assign to boolean variable ' + repr(name))
-#             else:
-#                 raise NameError('Unknown data type ' + self.VARIABLES[name])
-
-#         #else: # ignore for now
-#             #raise NameError(repr(name) + ' variable not defined.')
-#         return value
-
-#     def visit_input_values(self, variable: Variable):
-#         output = ''
-#         data_types = []
-#         for val in variable.token.value:
-#             data_types.append(self.VARIABLES[val.value])
-
-#         inputs = raw_input('please input ' + str(len(variable.token.value)) + ' values separated by comma [' + ', '.join(data_types) + '] >>> ')
-#         print(inputs)
-#         values = inputs.split(',')
-#         if len(values) != len(variable.token.value):
-#             raise NameError("Invalid inputs.")
-#         i = 0
-#         for val in variable.token.value:
-#             value = values[i]
-#             data_type = self.VARIABLES[val.value]
-#             if data_type == "INT":
-#                 value = int(value)
-#             elif data_type == "FLOAT":
-#                 value = int(value)
-#             elif data_type == "CHAR":
-#                 value = value[0] if len(value) > 0 else value
-#             elif data_type == "BOOL":
-#                 if type(value) is bool:
-#                     value = 'TRUE' if value else 'FALSE'
-#                 value = str(value)
-#                 if value not in ['TRUE', 'FALSE']:
-#                     value = 'FALSE'
-#             else:
-#                 value = str(value)
-#             self.assign_var_value(val.value, value)
-#             i = i + 1
-
-#         return variable.token.value
-
-#     def input_values(self, variable: Variable):
-#         #input variables from user executable
-#         name = variable.token.value
-#         var_type = variable.type_node
-#         var = self.VARIABLES[name]
-#         if(var[0] == "INT"):
-#             value = int(input())
-#         elif(var[0] == "FLOAT"):
-#             value = float(input())
-#         elif(var[0] == "CHAR"):
-#             value = input()
-#         elif(var[0] == "BOOL"):
-#             value = bool(input())
-#         else:
-#             raise Exception(f"Invalid input. Received {variable.type} instead of {value}")
-
-#         self.assign_var_value(var[0], value)
-#         self.VARIABLES[name] = (var[0], value)
-
-#     def output_values(self, variable: Variable):
-#             #output variables from user executable
-#             name = variable.token.value
-#             var_type = variable.type_node
-#             data_type = self.VARIABLES[name]
-#             #for val in variable.token.value:
-#             #    if val == data_type:
-#             #        name = val.value
-#             #        val =self.VARIABLES[name]
-#             #        data_type = self.VARIABLES[name]
-#             #        if data_type == "INT":
-#             #            val = int(val)
-#             #        elif data_type == "FLOAT":
-#             #            val = float(val)
-#             #
-#             #        elif data_type == "CHAR":
-#             #            val = val[0] if len(val) > 0 else val
-
-#             #        elif data_type == BOOL:
-#             #            if type(val) is bool:
-#             #                val = "TRUE" if val else "FALSE"
-#             #            val = str(val)
-
-#             #            if val not in ["TRUE", "FALSE"]:
-#             #                val = "FALSE"
-
-#             #        else:
-#             #           val = str(val)
-
-#             #    else:
-#             return str(self.VARIABLES[name][1])
-
-#     def visit_executable_block(self,exec_node: Compound):
-#         nodes = exec_node.children
-#         for node in nodes:
-#             if(isinstance(node, Input)):
-#                 variables = node.token.value
-#                 for var in variables:
-#                     self.input_values(var)
-#             if(isinstance(node, Output)):
-#                 variables = node.token.value
-#                 s_out = ""
-#                 for var in variables:
-#                     s_out += self.output_values(var)
-#                 print(s_out)
-
-#     def interpret(self):
-#         variable_declaration = self.parser.parse_execute()
-#         self.visit_variable_declaration_block(variable_declaration.block.declarations)
-#         self.visit_executable_block(variable_declaration.block.compound_statement)
+        program = self.parser.parse_execute()
+        self.visit(program)

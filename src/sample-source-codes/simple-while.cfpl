@@ -1,0 +1,8 @@
+VAR foo AS INT
+START
+    foo = 1
+    WHILE(foo <= 10)
+    START
+        foo = foo + 1
+    STOP
+STOP

@@ -1,0 +1,4 @@
+VAR baz AS BOOL
+START
+    INPUT: baz
+STOP

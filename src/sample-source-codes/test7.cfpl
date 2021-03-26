@@ -2,4 +2,5 @@ VAR xyz,d, abc_1=100 * 12, c, x AS INT
 VAR s AS BOOL
 *   h w eh  aw g e j aw gejhgawhj
 START
+OUTPUT: s & s
 STOP
