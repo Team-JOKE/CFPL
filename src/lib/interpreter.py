@@ -291,7 +291,14 @@ class Interpreter(NodeVisitor):
     def visit_Output(self, output_node: ast.Output):
         output = ""
         for node in output_node.children:
-            output += str(self.visit(node))
+            temp = self.visit(node)
+            if type(temp) == bool:
+                if temp == True:
+                    output += "TRUE"
+                elif temp == False:
+                    output += "FALSE"
+            else:
+                output += str(temp)
         print(output)
 
     def visit_Program(self, program_node: ast.Program):
