@@ -424,7 +424,7 @@ class Parser(object):
         elif token.type == TokenType.LPAREN:
             self.eat(TokenType.LPAREN)
             node = self.expression()
-            self.eat(TokenType.RPAREN)
+            self.eat(TokenType.RPAREN,error_string="Are you missing a right parenthesis? ")
             return node
         elif self.current_token.type == TokenType.IDENT:
             return self.variable()
